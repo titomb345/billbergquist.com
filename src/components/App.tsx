@@ -8,7 +8,7 @@ import catchErrors from "utils/catchErrors";
 import DocumentTitle from "react-document-title";
 
 // Components
-import Layout from "components/Layout/Layout"
+import Layout from "components/Layout/Layout";
 import NotFound from "components/Layout/NotFound";
 
 // array of routes

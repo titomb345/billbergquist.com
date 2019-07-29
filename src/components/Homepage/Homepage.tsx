@@ -12,6 +12,6 @@ const Homepage = () => (
 			</Row>
 		</Container>
 	</DocumentTitle>
-)
+);
 
 export default Homepage;

@@ -7,9 +7,10 @@ import { composeWithDevTools } from "redux-devtools-extension";
 import { combineReducers } from "redux";
 import { applyMiddleware, createStore } from "redux";
 
-const createRootReducer = (history) => combineReducers({
-	router: connectRouter(history),
-})
+const createRootReducer = thisHistory =>
+	combineReducers({
+		router: connectRouter(thisHistory),
+	});
 
 const middlewares = [routerMiddleware(history), thunk];
 

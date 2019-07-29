@@ -1,6 +1,6 @@
 {
   "name": "billbergquist.com",
-  "homepage": "https://billbergquist.com",
+  "homepage": "https://www.billbergquist.com",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -24,10 +24,9 @@
     "redux-devtools-extension": "^2.13.8",
     "redux-thunk": "^2.3.0",
     "tslint-react": "^4.0.0",
-    "typescript": "^3.2.1"
+    "typescript": "3.1.6"
   },
   "devDependencies": {
-    "gh-pages": "^2.0.1",
     "prettier": "^1.18.2",
     "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",
@@ -35,12 +34,12 @@
   },
   "scripts": {
     "predeploy": "yarn build",
-    "deploy": "gh-pages -d build",
+    "deploy": "aws s3 sync build/ s3://www.billbergquist.com",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\" --write \"tests/**/*.{js,jsx,ts,tsx}\"",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "typecheck": "tsc --noEmit",
     "lint": "tslint -c ./tslint.json './src/**/*.ts{,x}'",
     "tslint-check": "tslint-config-prettier-check ./tslint.json",

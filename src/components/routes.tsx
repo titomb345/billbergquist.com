@@ -1,8 +1,10 @@
 import * as React from "react";
+import { RouteComponentProps } from "react-router";
 
 // Route Components
-import Homepage from "components/Homepage/Homepage"
-import { RouteComponentProps } from "react-router";
+import Homepage from "components/Homepage/Homepage";
+import Dartmud from "components/Dartmud/Dartmud";
+import TicTacToe from "components/TicTacToe/TicTacToe";
 
 export interface Route {
 	path: string;
@@ -15,6 +17,16 @@ const routes: Route[] = [
 	{
 		path: "/",
 		component: Homepage,
+		exact: true,
+	},
+	{
+		path: "/dartmud",
+		component: Dartmud,
+		exact: true,
+	},
+	{
+		path: "/tic-tac-toe",
+		component: TicTacToe,
 		exact: true,
 	},
 ];
