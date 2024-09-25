@@ -1,6 +1,14 @@
 {
-  "printWidth": 100,
-  "singleQuote": false,
-  "trailingComma": "es5",
-  "parser": "typescript"
+	"printWidth": 100,
+	"singleQuote": true,
+	"trailingComma": "es5",
+	"parser": "typescript",
+	"semi": true,
+	"tabWidth": 2,
+	"useTabs": false,
+	"quoteProps": "consistent",
+	"bracketSpacing": true,
+	"bracketSameLine": false,
+	"arrowParens": "always",
+	"endOfLine": "lf"
 }

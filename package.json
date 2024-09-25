@@ -1,52 +1,41 @@
 {
-  "name": "billbergquist.com",
-  "homepage": "https://www.billbergquist.com",
+  "name": "my-app",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@emotion/core": "^10.0.14",
-    "@emotion/styled": "^10.0.14",
-    "@types/jest": "^24.0.15",
-    "@types/node": "^12.6.2",
-    "@types/react": "^16.8.23",
-    "@types/react-dom": "^16.8.4",
-    "@types/react-redux": "^7.1.1",
-    "@types/react-router-dom": "^4.3.4",
-    "@varius.io/wombo": "^0.6.6",
-    "connected-react-router": "^6.5.0",
-    "history": "^4.9.0",
-    "react": "^16.8.6",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.1.1",
+    "@mui/material": "^6.1.1",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.111",
+    "@types/react": "^18.3.9",
+    "@types/react-copy-to-clipboard": "^5.0.7",
+    "@types/react-dom": "^18.3.0",
+    "react": "^18.3.1",
+    "react-copy-to-clipboard": "^5.1.0",
     "react-document-title": "^2.0.3",
-    "react-dom": "^16.8.6",
-    "react-redux": "^7.1.0",
-    "react-router-dom": "^5.0.1",
-    "react-scripts": "3.0.1",
-    "redux-devtools-extension": "^2.13.8",
-    "redux-thunk": "^2.3.0",
-    "tslint-react": "^4.0.0",
-    "typescript": "3.1.6"
-  },
-  "devDependencies": {
-    "prettier": "^1.18.2",
-    "tslint": "^5.18.0",
-    "tslint-config-prettier": "^1.18.0",
-    "tslint-plugin-prettier": "^2.0.1"
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.53.0",
+    "react-router-dom": "^6.26.2",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "predeploy": "yarn build",
-    "deploy": "aws s3 sync build/ s3://www.billbergquist.com",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
-    "typecheck": "tsc --noEmit",
-    "lint": "tslint -c ./tslint.json './src/**/*.ts{,x}'",
-    "tslint-check": "tslint-config-prettier-check ./tslint.json",
-    "cleanup": "npm run typecheck && npm run tslint-check && npm run format && npm run lint"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
   },
   "browserslist": {
     "production": [
