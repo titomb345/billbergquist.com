@@ -7,16 +7,16 @@ import Error from './routes/error';
 import NbaGenerator from './routes/nba/nba-generator';
 
 function App() {
-	return (
-		<Layout>
-			<Routes>
-				<Route path="/" element={<Home />} />
-				<Route path="/nfl" element={<NflGenerator />} />
-				<Route path="/nba" element={<NbaGenerator />} />
-				<Route path="*" element={<Error />} />
-			</Routes>
-		</Layout>
-	);
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/nfl" element={<NflGenerator />} />
+        <Route path="/nba" element={<NbaGenerator />} />
+        <Route path="*" element={<Error />} />
+      </Routes>
+    </Layout>
+  );
 }
 
 export default App;
