@@ -1,7 +1,9 @@
 import { Stack, Typography } from '@mui/material';
-import { useInputs, usePageTitle } from '../../hooks';
+import { usePageTitle, useShowGenerations } from '../../hooks';
 import Generations from './generations';
 import Inputs from '../../components/inputs';
+import { useContext } from 'react';
+import { InputsContext } from '../../components/inputs-context';
 
 export function NbaGenerator() {
   const {
@@ -13,8 +15,8 @@ export function NbaGenerator() {
     setMascot,
     dayOfWeek,
     setDayOfWeek,
-    showGenerations,
-  } = useInputs();
+  } = useContext(InputsContext);
+  const { showGenerations } = useShowGenerations(playerName);
 
   usePageTitle('Sports Shortcuts | NBA');
 
@@ -32,17 +34,13 @@ export function NbaGenerator() {
           mascot={mascot}
           setMascot={setMascot}
         />
-        {showGenerations ? (
+        {showGenerations && (
           <Generations
             playerName={playerName}
             injury={injury}
             dayOfWeek={dayOfWeek}
             mascot={mascot}
           />
-        ) : (
-          <Typography align="center" variant="subtitle2">
-            Enter a player name to see the generations.
-          </Typography>
         )}
       </Stack>
     </Stack>

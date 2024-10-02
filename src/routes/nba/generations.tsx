@@ -1,6 +1,6 @@
 import { DayOfWeek } from '../../types';
 import { Box, Stack } from '@mui/material';
-import StatusUpdate from '../../components/statusUpdate';
+import StatusUpdate from '../../components/status-update';
 import { makePossessive } from '../../utils/text';
 
 type GenerationsProps = {
