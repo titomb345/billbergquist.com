@@ -1,0 +1,117 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: var(--transition-normal);
+}
+
+.button:hover::before {
+  left: 100%;
+}
+
+/* Primary variant - Cyan */
+.primary {
+  background-color: transparent;
+  border-color: var(--neon-cyan);
+  color: var(--neon-cyan);
+  box-shadow:
+    0 0 5px var(--neon-cyan-glow),
+    inset 0 0 5px var(--neon-cyan-glow);
+}
+
+.primary:hover {
+  background-color: var(--neon-cyan);
+  color: var(--bg-void);
+  box-shadow:
+    0 0 10px var(--neon-cyan),
+    0 0 20px var(--neon-cyan-glow),
+    0 0 30px var(--neon-cyan-glow);
+}
+
+/* Secondary variant - Magenta */
+.secondary {
+  background-color: transparent;
+  border-color: var(--neon-magenta);
+  color: var(--neon-magenta);
+  box-shadow:
+    0 0 5px var(--neon-magenta-glow),
+    inset 0 0 5px var(--neon-magenta-glow);
+}
+
+.secondary:hover {
+  background-color: var(--neon-magenta);
+  color: var(--bg-void);
+  box-shadow:
+    0 0 10px var(--neon-magenta),
+    0 0 20px var(--neon-magenta-glow),
+    0 0 30px var(--neon-magenta-glow);
+}
+
+/* Ghost variant */
+.ghost {
+  background-color: transparent;
+  border-color: var(--text-muted);
+  color: var(--text-secondary);
+}
+
+.ghost:hover {
+  border-color: var(--neon-cyan);
+  color: var(--neon-cyan);
+  box-shadow: 0 0 5px var(--neon-cyan-glow);
+}
+
+/* Sizes */
+.small {
+  padding: var(--space-xs) var(--space-md);
+  font-size: 0.75rem;
+}
+
+.large {
+  padding: var(--space-md) var(--space-xl);
+  font-size: 1rem;
+}
+
+/* Disabled state */
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.button:disabled:hover {
+  background-color: transparent;
+  color: inherit;
+  box-shadow: none;
+}
+
+.button:disabled::before {
+  display: none;
+}

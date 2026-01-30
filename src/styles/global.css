@@ -1,0 +1,85 @@
+@import './variables.css';
+@import './reset.css';
+@import './animations.css';
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--neon-cyan);
+  color: var(--bg-void);
+}
+
+/* Focus styling for accessibility */
+:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-void);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-elevated);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-cyan-glow);
+}
+
+/* Utility classes */
+.neon-text-cyan {
+  color: var(--neon-cyan);
+  text-shadow:
+    0 0 5px var(--neon-cyan),
+    0 0 10px var(--neon-cyan),
+    0 0 20px var(--neon-cyan-glow);
+}
+
+.neon-text-magenta {
+  color: var(--neon-magenta);
+  text-shadow:
+    0 0 5px var(--neon-magenta),
+    0 0 10px var(--neon-magenta),
+    0 0 20px var(--neon-magenta-glow);
+}
+
+.neon-text-purple {
+  color: var(--neon-purple);
+  text-shadow:
+    0 0 5px var(--neon-purple),
+    0 0 10px var(--neon-purple),
+    0 0 20px var(--neon-purple-glow);
+}
+
+/* Mobile performance: reduce glow effects */
+@media (max-width: 640px) {
+  .neon-text-cyan,
+  .neon-text-magenta,
+  .neon-text-purple {
+    text-shadow:
+      0 0 5px currentColor,
+      0 0 10px currentColor;
+  }
+}
+
+/* Reduce effects for low-powered devices */
+@media (prefers-reduced-motion: reduce) {
+  .neon-text-cyan,
+  .neon-text-magenta,
+  .neon-text-purple {
+    text-shadow: 0 0 5px currentColor;
+  }
+}
