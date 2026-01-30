@@ -29,12 +29,12 @@ function Hero({ onEnterArcade }: HeroProps) {
         </GlowText>
         <p className={styles.subtitle}>
           <span className={styles.subtitleBracket}>&lt;</span>
-          {' Arcade Hub '}
+          {' Staff Software Engineer '}
           <span className={styles.subtitleBracket}>/&gt;</span>
         </p>
         <div className={styles.cta}>
           <Button variant="primary" size="large" onClick={handleClick}>
-            Enter Arcade
+            View My Work
           </Button>
         </div>
       </div>

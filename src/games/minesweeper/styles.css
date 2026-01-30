@@ -1,5 +1,13 @@
 /* Classic Windows Minesweeper Styling */
 
+/* Responsive CSS Custom Properties */
+:root {
+  --cell-size: 28px;
+  --cell-font: 18px;
+  --led-font: 28px;
+  --led-width: 54px;
+}
+
 .minesweeper {
   display: inline-block;
   background-color: #c0c0c0;
@@ -27,12 +35,12 @@
   background-color: #000;
   color: #ff0000;
   font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 28px;
+  font-size: var(--led-font);
   font-weight: bold;
   padding: 3px 6px;
   border: 1px solid;
   border-color: #808080 #ffffff #ffffff #808080;
-  min-width: 54px;
+  min-width: var(--led-width);
   text-align: right;
   letter-spacing: 2px;
 }
@@ -70,13 +78,13 @@
 
 /* Cell */
 .cell {
-  width: 28px;
-  height: 28px;
+  width: var(--cell-size);
+  height: var(--cell-size);
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: var(--cell-font);
   font-weight: bold;
   cursor: pointer;
 }
@@ -150,9 +158,39 @@
   flex-direction: column;
   align-items: center;
   padding: 20px;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 /* Prevent context menu on right-click */
 .minesweeper-board {
   -webkit-touch-callout: none;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 640px) {
+  :root {
+    --cell-size: 22px;
+    --cell-font: 14px;
+    --led-font: 22px;
+    --led-width: 44px;
+  }
+
+  .minesweeper-container {
+    padding: 10px;
+  }
+
+  .difficulty-button {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --cell-size: 18px;
+    --cell-font: 12px;
+    --led-font: 18px;
+    --led-width: 38px;
+  }
 }

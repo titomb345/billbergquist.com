@@ -11,8 +11,14 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
   gap: var(--space-lg);
+  justify-content: center;
+}
+
+.arcadeLink {
+  text-align: center;
+  margin-top: var(--space-lg);
 }
 
 @media (max-width: 640px) {

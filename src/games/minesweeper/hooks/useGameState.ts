@@ -4,7 +4,7 @@ import {
   GameAction,
   GameStatus,
   Difficulty,
-  DIFFICULTY_CONFIGS,
+  getDifficultyConfig,
 } from '../types';
 import {
   createEmptyBoard,
@@ -22,7 +22,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'NEW_GAME': {
       const difficulty = action.difficulty ?? state.difficulty;
-      return createInitialState(difficulty);
+      const isMobile = action.isMobile ?? state.isMobile;
+      return createInitialState(difficulty, isMobile);
     }
 
     case 'TICK': {
@@ -46,13 +47,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       // Handle first click - place mines after
       if (state.isFirstClick) {
-        const config = DIFFICULTY_CONFIGS[state.difficulty];
-        newBoard = placeMines(
-          createEmptyBoard(config),
-          config,
-          row,
-          col
-        );
+        const config = getDifficultyConfig(state.difficulty, state.isMobile);
+        newBoard = placeMines(createEmptyBoard(config), config, row, col);
         isFirstClick = false;
         newStatus = 'playing';
       }
@@ -68,13 +64,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newStatus = 'won';
       }
 
+      const config = getDifficultyConfig(state.difficulty, state.isMobile);
       return {
         ...state,
         board: newBoard,
         status: newStatus,
         isFirstClick,
-        minesRemaining:
-          DIFFICULTY_CONFIGS[state.difficulty].mines - countFlags(newBoard),
+        minesRemaining: config.mines - countFlags(newBoard),
       };
     }
 
@@ -88,11 +84,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const newBoard = toggleFlag(state.board, row, col);
       const flagCount = countFlags(newBoard);
+      const config = getDifficultyConfig(state.difficulty, state.isMobile);
 
       return {
         ...state,
         board: newBoard,
-        minesRemaining: DIFFICULTY_CONFIGS[state.difficulty].mines - flagCount,
+        minesRemaining: config.mines - flagCount,
       };
     }
 
@@ -112,12 +109,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newStatus = 'won';
       }
 
+      const config = getDifficultyConfig(state.difficulty, state.isMobile);
       return {
         ...state,
         board: finalBoard,
         status: newStatus,
-        minesRemaining:
-          DIFFICULTY_CONFIGS[state.difficulty].mines - countFlags(finalBoard),
+        minesRemaining: config.mines - countFlags(finalBoard),
       };
     }
 
@@ -126,12 +123,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   }
 }
 
-export function useGameState(initialDifficulty: Difficulty = 'beginner') {
+export function useGameState(
+  initialDifficulty: Difficulty = 'beginner',
+  isMobile: boolean = false
+) {
   const [state, dispatch] = useReducer(
     gameReducer,
-    initialDifficulty,
-    createInitialState
+    { difficulty: initialDifficulty, isMobile },
+    ({ difficulty, isMobile }) => createInitialState(difficulty, isMobile)
   );
+
+  // Reinitialize game when isMobile changes
+  useEffect(() => {
+    if (state.isMobile !== isMobile) {
+      dispatch({ type: 'NEW_GAME', isMobile });
+    }
+  }, [isMobile, state.isMobile]);
 
   // Timer effect
   useEffect(() => {
@@ -144,11 +151,11 @@ export function useGameState(initialDifficulty: Difficulty = 'beginner') {
     return () => clearInterval(interval);
   }, [state.status]);
 
-  const revealCell = useCallback((row: number, col: number) => {
+  const revealCellAction = useCallback((row: number, col: number) => {
     dispatch({ type: 'REVEAL_CELL', row, col });
   }, []);
 
-  const toggleFlag = useCallback((row: number, col: number) => {
+  const toggleFlagAction = useCallback((row: number, col: number) => {
     dispatch({ type: 'TOGGLE_FLAG', row, col });
   }, []);
 
@@ -156,14 +163,17 @@ export function useGameState(initialDifficulty: Difficulty = 'beginner') {
     dispatch({ type: 'CHORD_CLICK', row, col });
   }, []);
 
-  const newGame = useCallback((difficulty?: Difficulty) => {
-    dispatch({ type: 'NEW_GAME', difficulty });
-  }, []);
+  const newGame = useCallback(
+    (difficulty?: Difficulty) => {
+      dispatch({ type: 'NEW_GAME', difficulty, isMobile });
+    },
+    [isMobile]
+  );
 
   return {
     state,
-    revealCell,
-    toggleFlag,
+    revealCell: revealCellAction,
+    toggleFlag: toggleFlagAction,
     chordClick,
     newGame,
   };
