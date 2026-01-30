@@ -6,13 +6,14 @@ Personal website built with React and TypeScript.
 
 ```bash
 npm install
-npm start
+npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view in the browser.
+Open [http://localhost:5173](http://localhost:5173) to view in the browser.
 
 ## Build
 
 ```bash
 npm run build
+npm run preview  # Preview the production build
 ```
