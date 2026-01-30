@@ -1,4 +1,5 @@
 import { GameStatus } from '../types';
+import { SmileyIcon } from './icons';
 
 interface HeaderProps {
   minesRemaining: number;
@@ -16,22 +17,11 @@ function Header({ minesRemaining, time, status, onNewGame }: HeaderProps) {
     return String(clamped).padStart(3, '0');
   };
 
-  const getSmiley = (): string => {
-    switch (status) {
-      case 'won':
-        return '😎';
-      case 'lost':
-        return '😵';
-      default:
-        return '🙂';
-    }
-  };
-
   return (
     <div className="minesweeper-header">
       <div className="led-display">{formatNumber(minesRemaining)}</div>
       <button className="smiley-button" onClick={onNewGame}>
-        {getSmiley()}
+        <SmileyIcon status={status} size={24} />
       </button>
       <div className="led-display">{formatNumber(time)}</div>
     </div>
