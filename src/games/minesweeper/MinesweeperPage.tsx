@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import Minesweeper from '../components/minesweeper/Minesweeper';
+import Minesweeper from './Minesweeper';
 import styles from './MinesweeperPage.module.css';
 
 function MinesweeperPage() {

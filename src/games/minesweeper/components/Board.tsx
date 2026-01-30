@@ -1,4 +1,4 @@
-import { Cell as CellType } from './types';
+import { Cell as CellType } from '../types';
 import Cell from './Cell';
 
 interface BoardProps {
