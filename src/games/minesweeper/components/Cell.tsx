@@ -1,4 +1,5 @@
 import { Cell as CellType } from '../types';
+import { MineIcon, FlagIcon } from './icons';
 
 interface CellProps {
   cell: CellType;
@@ -57,17 +58,17 @@ function Cell({ cell, onReveal, onFlag, onChord, gameOver }: CellProps) {
 
   const getContent = () => {
     if (cell.state === 'flagged') {
-      return '🚩';
+      return <FlagIcon />;
     }
     if (cell.state === 'revealed') {
       if (cell.isMine) {
-        return '💣';
+        return <MineIcon />;
       }
       if (cell.adjacentMines > 0) {
         return cell.adjacentMines;
       }
     }
-    return '';
+    return null;
   };
 
   return (
