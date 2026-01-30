@@ -1,0 +1,118 @@
+.card {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-normal);
+}
+
+/* Gradient border effect */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--radius-md);
+  padding: 2px;
+  background: linear-gradient(
+    135deg,
+    var(--neon-cyan),
+    var(--neon-magenta),
+    var(--neon-purple)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.3;
+  transition: var(--transition-normal);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 10px 40px rgba(0, 245, 255, 0.15),
+    0 0 20px rgba(0, 245, 255, 0.1);
+}
+
+/* Game card specific styles */
+.gameCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.gameCard .preview {
+  width: 100%;
+  height: 80px;
+  background-color: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.gameCard .previewImage {
+  font-size: 3rem;
+  opacity: 0.8;
+}
+
+.gameCard .title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.gameCard .description {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+  flex: 1;
+}
+
+.gameCard .action {
+  margin-top: auto;
+}
+
+/* Locked state */
+.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.locked::before {
+  background: linear-gradient(135deg, var(--text-muted), var(--bg-elevated));
+}
+
+.locked:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.lockedBadge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--text-muted);
+  border-radius: var(--radius-sm);
+}

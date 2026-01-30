@@ -1,14 +1,21 @@
 import { createBrowserRouter } from 'react-router-dom';
-import App from './App';
+import Layout from './components/layout/Layout';
+import HomePage from './pages/HomePage';
 import MinesweeperPage from './pages/MinesweeperPage';
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />,
-  },
-  {
-    path: '/minesweeper',
-    element: <MinesweeperPage />,
+    element: <Layout />,
+    children: [
+      {
+        index: true,
+        element: <HomePage />,
+      },
+      {
+        path: 'minesweeper',
+        element: <MinesweeperPage />,
+      },
+    ],
   },
 ]);

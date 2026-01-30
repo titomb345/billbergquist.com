@@ -1,0 +1,125 @@
+/* Neon pulse animation */
+@keyframes neon-pulse {
+  0%,
+  100% {
+    text-shadow:
+      0 0 5px var(--neon-cyan),
+      0 0 10px var(--neon-cyan),
+      0 0 20px var(--neon-cyan),
+      0 0 40px var(--neon-cyan-glow);
+  }
+  50% {
+    text-shadow:
+      0 0 2px var(--neon-cyan),
+      0 0 5px var(--neon-cyan),
+      0 0 10px var(--neon-cyan),
+      0 0 20px var(--neon-cyan-glow);
+  }
+}
+
+@keyframes neon-pulse-magenta {
+  0%,
+  100% {
+    text-shadow:
+      0 0 5px var(--neon-magenta),
+      0 0 10px var(--neon-magenta),
+      0 0 20px var(--neon-magenta),
+      0 0 40px var(--neon-magenta-glow);
+  }
+  50% {
+    text-shadow:
+      0 0 2px var(--neon-magenta),
+      0 0 5px var(--neon-magenta),
+      0 0 10px var(--neon-magenta),
+      0 0 20px var(--neon-magenta-glow);
+  }
+}
+
+/* Box glow animation */
+@keyframes box-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 5px var(--neon-cyan),
+      0 0 10px var(--neon-cyan-glow),
+      inset 0 0 5px var(--neon-cyan-glow);
+  }
+  50% {
+    box-shadow:
+      0 0 10px var(--neon-cyan),
+      0 0 20px var(--neon-cyan-glow),
+      inset 0 0 10px var(--neon-cyan-glow);
+  }
+}
+
+/* Gradient border animation */
+@keyframes border-rotate {
+  0% {
+    --angle: 0deg;
+  }
+  100% {
+    --angle: 360deg;
+  }
+}
+
+/* Grid line animation */
+@keyframes grid-scroll {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 50px 50px;
+  }
+}
+
+/* Fade in animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Flicker effect for extra neon feel */
+@keyframes flicker {
+  0%,
+  19%,
+  21%,
+  23%,
+  25%,
+  54%,
+  56%,
+  100% {
+    opacity: 1;
+  }
+  20%,
+  24%,
+  55% {
+    opacity: 0.8;
+  }
+}
+
+/* CRT scanline effect */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+/* Reduced motion: disable all animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
