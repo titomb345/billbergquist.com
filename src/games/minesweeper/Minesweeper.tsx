@@ -1,5 +1,6 @@
+import { useRef } from 'react';
 import { useGameState } from './hooks/useGameState';
-import { useIsMobile } from './hooks/useIsMobile';
+import { useContainerWidth } from './hooks/useContainerWidth';
 import Board from './components/Board';
 import Header from './components/Header';
 import DifficultySelector from './components/DifficultySelector';
@@ -7,9 +8,10 @@ import { Difficulty } from './types';
 import './styles.css';
 
 function Minesweeper() {
-  const isMobile = useIsMobile();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isConstrained = useContainerWidth(containerRef);
   const { state, revealCell, toggleFlag, chordClick, newGame } =
-    useGameState('beginner', isMobile);
+    useGameState('beginner', isConstrained);
 
   const handleDifficultyChange = (difficulty: Difficulty) => {
     newGame(difficulty);
@@ -22,8 +24,7 @@ function Minesweeper() {
   const isGameOver = state.status === 'won' || state.status === 'lost';
 
   return (
-    <div className="minesweeper-container">
-      <h1>Minesweeper</h1>
+    <div ref={containerRef} className="minesweeper-container">
       <DifficultySelector
         currentDifficulty={state.difficulty}
         onSelect={handleDifficultyChange}
@@ -44,14 +45,10 @@ function Minesweeper() {
         />
       </div>
       {state.status === 'won' && (
-        <p style={{ marginTop: '10px', color: 'green', fontWeight: 'bold' }}>
-          You Win!
-        </p>
+        <p className="game-message game-message-win">YOU WIN!</p>
       )}
       {state.status === 'lost' && (
-        <p style={{ marginTop: '10px', color: 'red', fontWeight: 'bold' }}>
-          Game Over!
-        </p>
+        <p className="game-message game-message-lose">GAME OVER</p>
       )}
     </div>
   );

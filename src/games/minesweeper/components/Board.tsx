@@ -11,10 +11,7 @@ interface BoardProps {
 
 function Board({ board, onReveal, onFlag, onChord, gameOver }: BoardProps) {
   return (
-    <div
-      className="minesweeper-board"
-      onContextMenu={(e) => e.preventDefault()}
-    >
+    <div className="minesweeper-board" onContextMenu={(e) => e.preventDefault()}>
       {board.map((row, rowIndex) => (
         <div key={rowIndex} className="board-row">
           {row.map((cell) => (
