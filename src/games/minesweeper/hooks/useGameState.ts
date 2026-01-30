@@ -5,7 +5,7 @@ import {
   GameStatus,
   Difficulty,
   DIFFICULTY_CONFIGS,
-} from './types';
+} from '../types';
 import {
   createEmptyBoard,
   createInitialState,
@@ -16,7 +16,7 @@ import {
   checkWin,
   revealAllMines,
   countFlags,
-} from './gameLogic';
+} from '../logic/gameLogic';
 
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {

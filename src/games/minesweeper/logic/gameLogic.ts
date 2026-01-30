@@ -4,7 +4,7 @@ import {
   Difficulty,
   DIFFICULTY_CONFIGS,
   DifficultyConfig,
-} from './types';
+} from '../types';
 
 export function createEmptyBoard(config: DifficultyConfig): Cell[][] {
   const board: Cell[][] = [];

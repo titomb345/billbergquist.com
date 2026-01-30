@@ -1,9 +1,9 @@
-import { useGameState } from './useGameState';
-import Board from './Board';
-import Header from './Header';
-import DifficultySelector from './DifficultySelector';
+import { useGameState } from './hooks/useGameState';
+import Board from './components/Board';
+import Header from './components/Header';
+import DifficultySelector from './components/DifficultySelector';
 import { Difficulty } from './types';
-import './Minesweeper.css';
+import './styles.css';
 
 function Minesweeper() {
   const { state, revealCell, toggleFlag, chordClick, newGame } = useGameState();

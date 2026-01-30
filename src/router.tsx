@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
-import MinesweeperPage from './pages/MinesweeperPage';
+import { MinesweeperPage } from './games/minesweeper';
 
 export const router = createBrowserRouter([
   {

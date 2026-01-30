@@ -1,4 +1,4 @@
-import { GameStatus } from './types';
+import { GameStatus } from '../types';
 
 interface HeaderProps {
   minesRemaining: number;
