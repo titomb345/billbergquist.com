@@ -10,7 +10,7 @@ function MinesweeperPage() {
       <div className={styles.header}>
         <button
           className={styles.backButton}
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/arcade')}
           type="button"
         >
           <svg
@@ -32,7 +32,6 @@ function MinesweeperPage() {
         <div className={styles.gameContainer}>
           <Minesweeper />
         </div>
-        <div className={styles.powerLed} />
       </div>
     </div>
   );

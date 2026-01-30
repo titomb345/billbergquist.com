@@ -16,7 +16,7 @@ function GameGrid() {
         color="magenta"
         className={styles.sectionTitle}
       >
-        ARCADE
+        FEATURED GAME
       </GlowText>
       <div className={styles.grid}>
         <GameCard
@@ -26,12 +26,17 @@ function GameGrid() {
           action={
             <Button
               variant="primary"
-              onClick={() => navigate('/minesweeper')}
+              onClick={() => navigate('/arcade/minesweeper')}
             >
               Play Now
             </Button>
           }
         />
+      </div>
+      <div className={styles.arcadeLink}>
+        <Button variant="secondary" onClick={() => navigate('/arcade')}>
+          View All Games →
+        </Button>
       </div>
     </section>
   );

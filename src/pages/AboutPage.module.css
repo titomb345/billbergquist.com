@@ -72,3 +72,13 @@
     font-size: 1rem;
   }
 }
+
+@media (max-width: 640px) {
+  .page {
+    padding: var(--space-md) var(--space-sm);
+  }
+
+  .summary {
+    font-size: 0.9375rem;
+  }
+}

@@ -2,8 +2,8 @@ import {
   Cell,
   GameState,
   Difficulty,
-  DIFFICULTY_CONFIGS,
   DifficultyConfig,
+  getDifficultyConfig,
 } from '../types';
 
 export function createEmptyBoard(config: DifficultyConfig): Cell[][] {
@@ -268,8 +268,11 @@ export function countFlags(board: Cell[][]): number {
   return count;
 }
 
-export function createInitialState(difficulty: Difficulty): GameState {
-  const config = DIFFICULTY_CONFIGS[difficulty];
+export function createInitialState(
+  difficulty: Difficulty,
+  isMobile: boolean = false
+): GameState {
+  const config = getDifficultyConfig(difficulty, isMobile);
   return {
     board: createEmptyBoard(config),
     difficulty,
@@ -277,5 +280,6 @@ export function createInitialState(difficulty: Difficulty): GameState {
     minesRemaining: config.mines,
     time: 0,
     isFirstClick: true,
+    isMobile,
   };
 }

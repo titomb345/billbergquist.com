@@ -1,4 +1,5 @@
 import { useGameState } from './hooks/useGameState';
+import { useIsMobile } from './hooks/useIsMobile';
 import Board from './components/Board';
 import Header from './components/Header';
 import DifficultySelector from './components/DifficultySelector';
@@ -6,7 +7,9 @@ import { Difficulty } from './types';
 import './styles.css';
 
 function Minesweeper() {
-  const { state, revealCell, toggleFlag, chordClick, newGame } = useGameState();
+  const isMobile = useIsMobile();
+  const { state, revealCell, toggleFlag, chordClick, newGame } =
+    useGameState('beginner', isMobile);
 
   const handleDifficultyChange = (difficulty: Difficulty) => {
     newGame(difficulty);

@@ -16,6 +16,11 @@
   justify-content: center;
 }
 
+.arcadeLink {
+  text-align: center;
+  margin-top: var(--space-lg);
+}
+
 @media (max-width: 640px) {
   .section {
     padding: var(--space-lg) var(--space-md);
