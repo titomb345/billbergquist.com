@@ -11,6 +11,9 @@ function Navbar() {
         <Link to="/" className={styles.navLink}>
           Home
         </Link>
+        <Link to="/about" className={styles.navLink}>
+          About
+        </Link>
         <Link to="/minesweeper" className={styles.navLink}>
           Games
         </Link>

@@ -16,7 +16,7 @@ function GameGrid() {
         color="magenta"
         className={styles.sectionTitle}
       >
-        SELECT GAME
+        ARCADE
       </GlowText>
       <div className={styles.grid}>
         <GameCard
@@ -31,16 +31,6 @@ function GameGrid() {
               Play Now
             </Button>
           }
-        />
-        <GameCard
-          title="Snake"
-          description="Guide the snake to eat food and grow longer. Don't hit the walls or yourself!"
-          locked
-        />
-        <GameCard
-          title="Tetris"
-          description="Stack falling blocks to clear lines. How long can you survive?"
-          locked
         />
       </div>
     </section>
