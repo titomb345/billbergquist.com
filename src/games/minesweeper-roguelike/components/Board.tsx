@@ -13,6 +13,9 @@ interface BoardProps {
   onCellHover?: (row: number, col: number) => void;
   onCellHoverEnd?: () => void;
   detectorCenter?: { row: number; col: number } | null;
+  chordHighlightCells?: Set<string>;
+  onChordHighlightStart?: (row: number, col: number) => void;
+  onChordHighlightEnd?: () => void;
 }
 
 function Board({
@@ -27,6 +30,9 @@ function Board({
   onCellHover,
   onCellHoverEnd,
   detectorCenter,
+  chordHighlightCells,
+  onChordHighlightStart,
+  onChordHighlightEnd,
 }: BoardProps) {
   // Check if a cell is within the 5x5 detector zone
   const isInDetectorZone = (row: number, col: number): boolean => {
@@ -57,6 +63,9 @@ function Board({
               onHover={onCellHover}
               onHoverEnd={onCellHoverEnd}
               inDetectorZone={isInDetectorZone(cell.row, cell.col)}
+              isChordHighlighted={chordHighlightCells?.has(`${cell.row},${cell.col}`)}
+              onChordHighlightStart={onChordHighlightStart}
+              onChordHighlightEnd={onChordHighlightEnd}
             />
           ))}
         </div>

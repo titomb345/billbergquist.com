@@ -30,6 +30,8 @@ function Minesweeper() {
     skipDraft,
     explosionComplete,
     floorClearComplete,
+    setChordHighlight,
+    clearChordHighlight,
   } = useRoguelikeState(isConstrained, stats.unlocks);
 
   const [xRayMode, setXRayMode] = useState(false);
@@ -109,6 +111,9 @@ function Minesweeper() {
               onCellHover={hasMineDetector ? handleCellHover : undefined}
               onCellHoverEnd={hasMineDetector ? handleCellHoverEnd : undefined}
               detectorCenter={hasMineDetector && !state.isFirstClick ? hoveredCell : null}
+              chordHighlightCells={state.chordHighlightCells}
+              onChordHighlightStart={setChordHighlight}
+              onChordHighlightEnd={clearChordHighlight}
             />
           </div>
         </>

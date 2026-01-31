@@ -39,6 +39,7 @@ export function createRoguelikeInitialState(isMobile: boolean, unlocks: PowerUpI
     run: createInitialRunState(),
     draftOptions: [],
     dangerCells: new Set(),
+    chordHighlightCells: new Set(),
     explodedCell: null,
     closeCallCell: null,
     unlocks,
@@ -59,6 +60,7 @@ export function setupFloor(state: RoguelikeGameState, floor: number): RoguelikeG
     time: 0,
     isFirstClick: true,
     dangerCells: new Set(),
+    chordHighlightCells: new Set(),
     explodedCell: null,
     closeCallCell: null,
     run: {
@@ -308,6 +310,44 @@ export function calculateMineCount5x5(
   }
 
   return count;
+}
+
+// Calculate cells to highlight for chord preview (adjacent hidden/flagged cells)
+export function calculateChordHighlightCells(
+  board: Cell[][],
+  centerRow: number,
+  centerCol: number
+): Set<string> {
+  const cells = new Set<string>();
+  const rows = board.length;
+  const cols = board[0]?.length || 0;
+  const centerCell = board[centerRow]?.[centerCol];
+
+  // Only highlight if the center cell is a revealed numbered cell
+  if (
+    !centerCell ||
+    centerCell.state !== CellState.Revealed ||
+    centerCell.adjacentMines === 0
+  ) {
+    return cells;
+  }
+
+  // Add adjacent hidden or flagged cells
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      const r = centerRow + dr;
+      const c = centerCol + dc;
+      if (r >= 0 && r < rows && c >= 0 && c < cols) {
+        const cell = board[r][c];
+        if (cell.state === CellState.Hidden || cell.state === CellState.Flagged) {
+          cells.add(`${r},${c}`);
+        }
+      }
+    }
+  }
+
+  return cells;
 }
 
 // Re-export countFlags from gameLogic to avoid duplication

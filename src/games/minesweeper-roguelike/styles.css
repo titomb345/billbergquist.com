@@ -700,6 +700,14 @@
   box-shadow: inset 0 0 6px rgba(255, 100, 0, 0.25);
 }
 
+/* Chord Highlight - visual feedback when pressing on numbered cell */
+.cell-chord-highlight {
+  background: linear-gradient(145deg, #1a1a2e, #0f0f1a) !important;
+  transform: scale(0.95);
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.5) !important;
+  transition: transform 0.05s, background 0.05s, box-shadow 0.05s;
+}
+
 /* Mine Detector Badge (on power-up icon) */
 .powerup-icon-wrapper.detector-active {
   position: relative;

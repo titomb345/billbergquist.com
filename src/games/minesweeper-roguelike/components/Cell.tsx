@@ -14,6 +14,9 @@ interface CellProps {
   onHover?: (row: number, col: number) => void; // For Mine Detector
   onHoverEnd?: () => void; // For Mine Detector
   inDetectorZone?: boolean; // For Mine Detector visual overlay
+  isChordHighlighted?: boolean; // For chord highlight preview
+  onChordHighlightStart?: (row: number, col: number) => void;
+  onChordHighlightEnd?: () => void;
 }
 
 function CellComponent({
@@ -28,6 +31,9 @@ function CellComponent({
   onHover,
   onHoverEnd,
   inDetectorZone = false,
+  isChordHighlighted = false,
+  onChordHighlightStart,
+  onChordHighlightEnd,
 }: CellProps) {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -52,15 +58,6 @@ function CellComponent({
     onFlag(cell.row, cell.col);
   };
 
-  const handleMiddleClick = (e: React.MouseEvent) => {
-    if (e.button === 1) {
-      e.preventDefault();
-      if (gameOver) return;
-      if (cell.state === CellState.Revealed && cell.adjacentMines > 0) {
-        onChord(cell.row, cell.col);
-      }
-    }
-  };
 
   const getClassName = () => {
     const classes = ['cell'];
@@ -76,10 +73,16 @@ function CellComponent({
       if (inDetectorZone) {
         classes.push('cell-detector-zone');
       }
+      if (isChordHighlighted) {
+        classes.push('cell-chord-highlight');
+      }
     } else if (cell.state === CellState.Flagged) {
       classes.push('cell-flagged');
       if (inDetectorZone) {
         classes.push('cell-detector-zone');
+      }
+      if (isChordHighlighted) {
+        classes.push('cell-chord-highlight');
       }
     } else if (cell.state === CellState.Revealed) {
       classes.push('cell-revealed');
@@ -108,15 +111,60 @@ function CellComponent({
     return null;
   };
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = (e: React.MouseEvent) => {
     if (onHover && cell.state === CellState.Hidden) {
       onHover(cell.row, cell.col);
+    }
+
+    // If mouse button is held and entering a revealed numbered cell, show chord highlight
+    if (e.buttons > 0 && !gameOver) {
+      if (
+        onChordHighlightStart &&
+        cell.state === CellState.Revealed &&
+        cell.adjacentMines > 0
+      ) {
+        onChordHighlightStart(cell.row, cell.col);
+      } else if (onChordHighlightEnd) {
+        // Clear highlight when moving to a non-chordable cell while button held
+        onChordHighlightEnd();
+      }
     }
   };
 
   const handleMouseLeave = () => {
     if (onHoverEnd) {
       onHoverEnd();
+    }
+    if (onChordHighlightEnd) {
+      onChordHighlightEnd();
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Handle middle-click for chord
+    if (e.button === 1) {
+      e.preventDefault();
+      if (gameOver) return;
+      if (cell.state === CellState.Revealed && cell.adjacentMines > 0) {
+        onChord(cell.row, cell.col);
+      }
+      return;
+    }
+
+    // Show chord highlight on mousedown for revealed numbered cells
+    if (
+      onChordHighlightStart &&
+      cell.state === CellState.Revealed &&
+      cell.adjacentMines > 0 &&
+      !gameOver
+    ) {
+      onChordHighlightStart(cell.row, cell.col);
+    }
+  };
+
+  const handleMouseUp = () => {
+    if (onChordHighlightEnd) {
+      onChordHighlightEnd();
     }
   };
 
@@ -125,7 +173,8 @@ function CellComponent({
       className={getClassName()}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
-      onMouseDown={handleMiddleClick}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -136,8 +185,9 @@ function CellComponent({
 
 // Memoize Cell to prevent re-renders when props haven't changed
 // On a 12x12 board, this prevents 144 unnecessary re-renders per state change
-// Note: Callback props (onReveal, onFlag, onChord, onXRay, onHover, onHoverEnd)
-// are assumed stable via useCallback in parent - not compared here for performance
+// Note: Callback props (onReveal, onFlag, onChord, onXRay, onHover, onHoverEnd,
+// onChordHighlightStart, onChordHighlightEnd) are assumed stable via useCallback
+// in parent - not compared here for performance
 const Cell = memo(CellComponent, (prev, next) => {
   return (
     prev.cell.state === next.cell.state &&
@@ -146,7 +196,8 @@ const Cell = memo(CellComponent, (prev, next) => {
     prev.gameOver === next.gameOver &&
     prev.hasDanger === next.hasDanger &&
     prev.xRayMode === next.xRayMode &&
-    prev.inDetectorZone === next.inDetectorZone
+    prev.inDetectorZone === next.inDetectorZone &&
+    prev.isChordHighlighted === next.isChordHighlighted
   );
 });
 

@@ -31,6 +31,7 @@ import {
   checkFloorCleared,
   isFinalFloor,
   countFlags,
+  calculateChordHighlightCells,
 } from '../logic/roguelikeLogic';
 import { getFloorConfig, selectDraftOptions, getAvailablePowerUps } from '../constants';
 import { saveGameState, loadGameState, clearGameState } from '../persistence';
@@ -446,6 +447,27 @@ function roguelikeReducer(
       };
     }
 
+    case 'SET_CHORD_HIGHLIGHT': {
+      if (state.phase !== GamePhase.Playing) return state;
+      const chordHighlightCells = calculateChordHighlightCells(
+        state.board,
+        action.row,
+        action.col
+      );
+      return {
+        ...state,
+        chordHighlightCells,
+      };
+    }
+
+    case 'CLEAR_CHORD_HIGHLIGHT': {
+      if (state.chordHighlightCells.size === 0) return state;
+      return {
+        ...state,
+        chordHighlightCells: new Set(),
+      };
+    }
+
     default:
       return state;
   }
@@ -548,6 +570,14 @@ export function useRoguelikeState(isMobile: boolean = false, unlocks: PowerUpId[
     dispatch({ type: 'FLOOR_CLEAR_COMPLETE' });
   }, []);
 
+  const setChordHighlight = useCallback((row: number, col: number) => {
+    dispatch({ type: 'SET_CHORD_HIGHLIGHT', row, col });
+  }, []);
+
+  const clearChordHighlight = useCallback(() => {
+    dispatch({ type: 'CLEAR_CHORD_HIGHLIGHT' });
+  }, []);
+
   return {
     state,
     startRun,
@@ -560,5 +590,7 @@ export function useRoguelikeState(isMobile: boolean = false, unlocks: PowerUpId[
     skipDraft,
     explosionComplete,
     floorClearComplete,
+    setChordHighlight,
+    clearChordHighlight,
   };
 }

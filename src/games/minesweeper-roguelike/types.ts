@@ -127,6 +127,7 @@ export interface RoguelikeGameState {
   run: RunState;
   draftOptions: PowerUp[];
   dangerCells: Set<string>; // Cell keys "row,col" that have danger glow
+  chordHighlightCells: Set<string>; // Cell keys "row,col" to highlight during chord press
   explodedCell: { row: number; col: number } | null; // Cell that triggered explosion
   closeCallCell: { row: number; col: number } | null; // Cell where Iron Will saved player
   unlocks: PowerUpId[]; // Unlocked power-ups available in draft pool
@@ -146,4 +147,6 @@ export type RoguelikeAction =
   | { type: 'SET_MOBILE'; isMobile: boolean }
   | { type: 'EXPLOSION_COMPLETE' }
   | { type: 'FLOOR_CLEAR_COMPLETE' }
-  | { type: 'CLOSE_CALL_COMPLETE' };
+  | { type: 'CLOSE_CALL_COMPLETE' }
+  | { type: 'SET_CHORD_HIGHLIGHT'; row: number; col: number }
+  | { type: 'CLEAR_CHORD_HIGHLIGHT' };
