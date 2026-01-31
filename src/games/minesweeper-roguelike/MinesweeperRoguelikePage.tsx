@@ -1,15 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { ArcadeCabinet } from '../../components/arcade';
-import Minesweeper from './Minesweeper';
+import MinesweeperRoguelike from './MinesweeperRoguelike';
 
-function MinesweeperPage() {
+function MinesweeperRoguelikePage() {
   const navigate = useNavigate();
 
   return (
     <ArcadeCabinet title="MINESWEEPER: DESCENT" color="magenta" onBack={() => navigate('/arcade')}>
-      <Minesweeper />
+      <MinesweeperRoguelike />
     </ArcadeCabinet>
   );
 }
 
-export default MinesweeperPage;
+export default MinesweeperRoguelikePage;

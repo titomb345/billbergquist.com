@@ -25,6 +25,71 @@ import {
 } from '../logic/roguelikeLogic';
 import { getFloorConfig, selectDraftOptions, getAvailablePowerUps } from '../constants';
 
+const STORAGE_KEY = 'minesweeper-descent-save';
+
+// Serializable version of state (Set -> Array)
+interface SerializedState extends Omit<RoguelikeGameState, 'dangerCells'> {
+  dangerCells: string[];
+}
+
+function serializeState(state: RoguelikeGameState): string {
+  const serializable: SerializedState = {
+    ...state,
+    dangerCells: Array.from(state.dangerCells),
+  };
+  return JSON.stringify(serializable);
+}
+
+function deserializeState(json: string): RoguelikeGameState | null {
+  try {
+    const parsed: SerializedState = JSON.parse(json);
+    // Validate it has required fields
+    if (!parsed.phase || !parsed.board || !parsed.run) {
+      return null;
+    }
+    return {
+      ...parsed,
+      dangerCells: new Set(parsed.dangerCells),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function loadSavedState(): RoguelikeGameState | null {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return null;
+    const state = deserializeState(saved);
+    // Only restore if in an active game phase
+    if (state && (state.phase === 'playing' || state.phase === 'draft')) {
+      return state;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function saveState(state: RoguelikeGameState): void {
+  try {
+    // Only save during active gameplay
+    if (state.phase === 'playing' || state.phase === 'draft') {
+      localStorage.setItem(STORAGE_KEY, serializeState(state));
+    }
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+function clearSavedState(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): RoguelikeGameState {
   switch (action.type) {
     case 'START_RUN': {
@@ -388,9 +453,15 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
 }
 
 export function useRoguelikeState(isMobile: boolean = false) {
-  const [state, dispatch] = useReducer(roguelikeReducer, isMobile, (mobile) =>
-    createRoguelikeInitialState(mobile)
-  );
+  const [state, dispatch] = useReducer(roguelikeReducer, isMobile, (mobile) => {
+    // Try to restore saved game
+    const saved = loadSavedState();
+    if (saved) {
+      // Update mobile state if it changed
+      return { ...saved, isMobile: mobile };
+    }
+    return createRoguelikeInitialState(mobile);
+  });
 
   // Handle mobile state changes
   useEffect(() => {
@@ -398,6 +469,16 @@ export function useRoguelikeState(isMobile: boolean = false) {
       dispatch({ type: 'SET_MOBILE', isMobile });
     }
   }, [isMobile, state.isMobile]);
+
+  // Save state to localStorage during active gameplay
+  useEffect(() => {
+    if (state.phase === 'playing' || state.phase === 'draft') {
+      saveState(state);
+    } else if (state.phase === 'start' || state.phase === 'run-over' || state.phase === 'victory') {
+      // Clear saved state when not in active gameplay
+      clearSavedState();
+    }
+  }, [state]);
 
   // Timer effect
   useEffect(() => {

@@ -11,7 +11,6 @@ function StartScreen({ stats, onStartRun }: StartScreenProps) {
 
   return (
     <div className="start-screen">
-      <h2 className="start-title">DESCENT</h2>
       <p className="start-subtitle">A Minesweeper Roguelike</p>
 
       <div className="start-description">

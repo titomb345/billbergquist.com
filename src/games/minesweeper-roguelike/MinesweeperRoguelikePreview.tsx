@@ -1,6 +1,6 @@
-import styles from './MinesweeperPreview.module.css';
+import styles from './MinesweeperRoguelikePreview.module.css';
 
-function MinesweeperPreview() {
+function MinesweeperRoguelikePreview() {
   // Mini representation of a minesweeper board with roguelike elements
   const cells = [
     '',
@@ -48,4 +48,4 @@ function MinesweeperPreview() {
   );
 }
 
-export default MinesweeperPreview;
+export default MinesweeperRoguelikePreview;

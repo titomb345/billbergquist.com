@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import GlowText from '../components/ui/GlowText';
 import { GameCard } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { MinesweeperPreview } from '../games/minesweeper';
+import { MinesweeperRoguelikePreview } from '../games/minesweeper-roguelike';
 import styles from './ArcadePage.module.css';
 
 function ArcadePage() {
@@ -23,11 +23,11 @@ function ArcadePage() {
         <GameCard
           title="Minesweeper: Descent"
           description="Roguelike minesweeper. Descend 10 floors of escalating danger. Collect power-ups to survive."
-          preview={<MinesweeperPreview />}
+          preview={<MinesweeperRoguelikePreview />}
           action={
             <Button
               variant="primary"
-              onClick={() => navigate('/arcade/minesweeper')}
+              onClick={() => navigate('/arcade/descent')}
             >
               Play Now
             </Button>

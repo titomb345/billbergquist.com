@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { GameCard } from '../ui/Card';
 import GlowText from '../ui/GlowText';
 import Button from '../ui/Button';
-import { MinesweeperPreview } from '../../games/minesweeper';
+import { MinesweeperRoguelikePreview } from '../../games/minesweeper-roguelike';
 import styles from './GameGrid.module.css';
 
 function GameGrid() {
@@ -22,11 +22,11 @@ function GameGrid() {
         <GameCard
           title="Minesweeper: Descent"
           description="Roguelike minesweeper. Descend 10 floors of escalating danger. Collect power-ups to survive."
-          preview={<MinesweeperPreview />}
+          preview={<MinesweeperRoguelikePreview />}
           action={
             <Button
               variant="primary"
-              onClick={() => navigate('/arcade/minesweeper')}
+              onClick={() => navigate('/arcade/descent')}
             >
               Play Now
             </Button>
