@@ -6,11 +6,7 @@ function MinesweeperPage() {
   const navigate = useNavigate();
 
   return (
-    <ArcadeCabinet
-      title="MINESWEEPER"
-      color="magenta"
-      onBack={() => navigate('/arcade')}
-    >
+    <ArcadeCabinet title="MINESWEEPER: DESCENT" color="magenta" onBack={() => navigate('/arcade')}>
       <Minesweeper />
     </ArcadeCabinet>
   );

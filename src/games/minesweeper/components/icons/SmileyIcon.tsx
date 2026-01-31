@@ -21,13 +21,7 @@ function SmileyIcon({ status, size = 24, className }: SmileyIconProps) {
   const color = getColor();
 
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      className={className}
-    >
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
       <defs>
         <filter id={`smileyGlow-${status}`} x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="1" result="coloredBlur" />
@@ -71,14 +65,7 @@ function SmileyIcon({ status, size = 24, className }: SmileyIconProps) {
             fill={color}
             filter={`url(#smileyGlow-${status})`}
           />
-          <line
-            x1="10"
-            y1="10"
-            x2="14"
-            y2="10"
-            stroke={color}
-            strokeWidth="1"
-          />
+          <line x1="10" y1="10" x2="14" y2="10" stroke={color} strokeWidth="1" />
         </>
       ) : status === 'lost' ? (
         /* X eyes for lost */
@@ -93,20 +80,8 @@ function SmileyIcon({ status, size = 24, className }: SmileyIconProps) {
       ) : (
         /* Normal eyes for playing */
         <>
-          <circle
-            cx="8"
-            cy="9"
-            r="2"
-            fill={color}
-            filter={`url(#smileyGlow-${status})`}
-          />
-          <circle
-            cx="16"
-            cy="9"
-            r="2"
-            fill={color}
-            filter={`url(#smileyGlow-${status})`}
-          />
+          <circle cx="8" cy="9" r="2" fill={color} filter={`url(#smileyGlow-${status})`} />
+          <circle cx="16" cy="9" r="2" fill={color} filter={`url(#smileyGlow-${status})`} />
         </>
       )}
 

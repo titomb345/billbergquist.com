@@ -21,8 +21,8 @@ function ArcadePage() {
 
       <main className={styles.grid}>
         <GameCard
-          title="Minesweeper"
-          description="Classic puzzle game. Clear the board without hitting any mines. Windows 95 nostalgia included."
+          title="Minesweeper: Descent"
+          description="Roguelike minesweeper. Descend 10 floors of escalating danger. Collect power-ups to survive."
           preview={<MinesweeperPreview />}
           action={
             <Button

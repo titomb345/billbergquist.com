@@ -1,9 +1,30 @@
 .minesweeperPreview {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   width: 80px;
   height: 80px;
+}
+
+.floorIndicator {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  font-weight: bold;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 3px var(--neon-cyan);
+}
+
+.gridArea {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  flex: 1;
+  width: 100%;
+}
+
+.powerUpIndicator {
+  font-size: 0.6rem;
 }
 
 .mineCell {
@@ -13,7 +34,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.5rem;
+  font-size: 0.4rem;
 }
 
 .mineCell.revealed {

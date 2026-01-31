@@ -7,11 +7,26 @@ interface BoardProps {
   onFlag: (row: number, col: number) => void;
   onChord: (row: number, col: number) => void;
   gameOver: boolean;
+  dangerCells?: Set<string>;
+  xRayMode?: boolean;
+  onXRay?: (row: number, col: number) => void;
 }
 
-function Board({ board, onReveal, onFlag, onChord, gameOver }: BoardProps) {
+function Board({
+  board,
+  onReveal,
+  onFlag,
+  onChord,
+  gameOver,
+  dangerCells,
+  xRayMode = false,
+  onXRay,
+}: BoardProps) {
   return (
-    <div className="minesweeper-board" onContextMenu={(e) => e.preventDefault()}>
+    <div
+      className={`minesweeper-board ${xRayMode ? 'xray-mode' : ''}`}
+      onContextMenu={(e) => e.preventDefault()}
+    >
       {board.map((row, rowIndex) => (
         <div key={rowIndex} className="board-row">
           {row.map((cell) => (
@@ -22,6 +37,9 @@ function Board({ board, onReveal, onFlag, onChord, gameOver }: BoardProps) {
               onFlag={onFlag}
               onChord={onChord}
               gameOver={gameOver}
+              hasDanger={dangerCells?.has(`${cell.row},${cell.col}`)}
+              xRayMode={xRayMode}
+              onXRay={onXRay}
             />
           ))}
         </div>

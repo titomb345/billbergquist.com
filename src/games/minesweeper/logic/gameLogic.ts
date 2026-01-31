@@ -1,10 +1,4 @@
-import {
-  Cell,
-  GameState,
-  Difficulty,
-  DifficultyConfig,
-  getDifficultyConfig,
-} from '../types';
+import { Cell, GameState, Difficulty, DifficultyConfig, getDifficultyConfig } from '../types';
 
 export function createEmptyBoard(config: DifficultyConfig): Cell[][] {
   const board: Cell[][] = [];
@@ -57,10 +51,7 @@ export function placeMines(
   // Shuffle and pick mine positions
   for (let i = validPositions.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [validPositions[i], validPositions[j]] = [
-      validPositions[j],
-      validPositions[i],
-    ];
+    [validPositions[i], validPositions[j]] = [validPositions[j], validPositions[i]];
   }
 
   const minePositions = validPositions.slice(0, config.mines);
@@ -116,11 +107,7 @@ export function revealCell(board: Cell[][], row: number, col: number): Cell[][] 
   return newBoard;
 }
 
-export function revealCascade(
-  board: Cell[][],
-  startRow: number,
-  startCol: number
-): Cell[][] {
+export function revealCascade(board: Cell[][], startRow: number, startCol: number): Cell[][] {
   const rows = board.length;
   const cols = board[0].length;
   const stack: [number, number][] = [[startRow, startCol]];
@@ -145,13 +132,7 @@ export function revealCascade(
           if (dr === 0 && dc === 0) continue;
           const r = row + dr;
           const c = col + dc;
-          if (
-            r >= 0 &&
-            r < rows &&
-            c >= 0 &&
-            c < cols &&
-            board[r][c].state === 'hidden'
-          ) {
+          if (r >= 0 && r < rows && c >= 0 && c < cols && board[r][c].state === 'hidden') {
             stack.push([r, c]);
           }
         }
@@ -194,13 +175,7 @@ export function chordReveal(
       if (dr === 0 && dc === 0) continue;
       const r = row + dr;
       const c = col + dc;
-      if (
-        r >= 0 &&
-        r < rows &&
-        c >= 0 &&
-        c < cols &&
-        board[r][c].state === 'flagged'
-      ) {
+      if (r >= 0 && r < rows && c >= 0 && c < cols && board[r][c].state === 'flagged') {
         flagCount++;
       }
     }
@@ -268,10 +243,7 @@ export function countFlags(board: Cell[][]): number {
   return count;
 }
 
-export function createInitialState(
-  difficulty: Difficulty,
-  isMobile: boolean = false
-): GameState {
+export function createInitialState(difficulty: Difficulty, isMobile: boolean = false): GameState {
   const config = getDifficultyConfig(difficulty, isMobile);
   return {
     board: createEmptyBoard(config),

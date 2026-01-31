@@ -9,10 +9,7 @@ import { useState, useEffect, RefObject } from 'react';
  * @param threshold - Width threshold in pixels (default: 600px)
  * @returns true if container width <= threshold
  */
-export function useContainerWidth(
-  ref: RefObject<HTMLElement | null>,
-  threshold = 600
-): boolean {
+export function useContainerWidth(ref: RefObject<HTMLElement | null>, threshold = 600): boolean {
   const [isConstrained, setIsConstrained] = useState(false);
 
   useEffect(() => {

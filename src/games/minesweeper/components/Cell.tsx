@@ -7,12 +7,30 @@ interface CellProps {
   onFlag: (row: number, col: number) => void;
   onChord: (row: number, col: number) => void;
   gameOver: boolean;
+  hasDanger?: boolean; // For Danger Sense power-up
+  xRayMode?: boolean; // For X-Ray Vision targeting
+  onXRay?: (row: number, col: number) => void;
 }
 
-function Cell({ cell, onReveal, onFlag, onChord, gameOver }: CellProps) {
+function Cell({
+  cell,
+  onReveal,
+  onFlag,
+  onChord,
+  gameOver,
+  hasDanger = false,
+  xRayMode = false,
+  onXRay,
+}: CellProps) {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (gameOver) return;
+
+    // X-Ray mode takes precedence
+    if (xRayMode && onXRay) {
+      onXRay(cell.row, cell.col);
+      return;
+    }
 
     if (cell.state === 'revealed' && cell.adjacentMines > 0) {
       onChord(cell.row, cell.col);
@@ -42,6 +60,12 @@ function Cell({ cell, onReveal, onFlag, onChord, gameOver }: CellProps) {
 
     if (cell.state === 'hidden') {
       classes.push('cell-hidden');
+      if (hasDanger) {
+        classes.push('cell-danger');
+      }
+      if (xRayMode) {
+        classes.push('cell-xray-target');
+      }
     } else if (cell.state === 'flagged') {
       classes.push('cell-flagged');
     } else if (cell.state === 'revealed') {
