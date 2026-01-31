@@ -13,6 +13,7 @@ interface CellProps {
   onXRay?: (row: number, col: number) => void;
   onHover?: (row: number, col: number) => void; // For Mine Detector
   onHoverEnd?: () => void; // For Mine Detector
+  inDetectorZone?: boolean; // For Mine Detector visual overlay
 }
 
 function CellComponent({
@@ -26,6 +27,7 @@ function CellComponent({
   onXRay,
   onHover,
   onHoverEnd,
+  inDetectorZone = false,
 }: CellProps) {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -71,8 +73,14 @@ function CellComponent({
       if (xRayMode) {
         classes.push('cell-xray-target');
       }
+      if (inDetectorZone) {
+        classes.push('cell-detector-zone');
+      }
     } else if (cell.state === CellState.Flagged) {
       classes.push('cell-flagged');
+      if (inDetectorZone) {
+        classes.push('cell-detector-zone');
+      }
     } else if (cell.state === CellState.Revealed) {
       classes.push('cell-revealed');
       if (cell.isMine) {
@@ -137,7 +145,8 @@ const Cell = memo(CellComponent, (prev, next) => {
     prev.cell.isMine === next.cell.isMine &&
     prev.gameOver === next.gameOver &&
     prev.hasDanger === next.hasDanger &&
-    prev.xRayMode === next.xRayMode
+    prev.xRayMode === next.xRayMode &&
+    prev.inDetectorZone === next.inDetectorZone
   );
 });
 

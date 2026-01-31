@@ -213,11 +213,6 @@ function roguelikeReducer(
         newDraftOptions = clearResult.draftOptions;
       }
 
-      // Update danger cells after reveal
-      if (hasPowerUp(state.run, 'danger-sense') && newPhase === GamePhase.Playing) {
-        newDangerCells = calculateDangerCells(newBoard);
-      }
-
       return {
         ...state,
         board: newBoard,
@@ -302,19 +297,12 @@ function roguelikeReducer(
         newDraftOptions = clearResult.draftOptions;
       }
 
-      // Update danger cells
-      let newDangerCells = state.dangerCells;
-      if (hasPowerUp(state.run, 'danger-sense') && newPhase === GamePhase.Playing) {
-        newDangerCells = calculateDangerCells(finalBoard);
-      }
-
       return {
         ...state,
         board: finalBoard,
         phase: newPhase,
         run: newRun,
         draftOptions: newDraftOptions,
-        dangerCells: newDangerCells,
         minesRemaining: state.floorConfig.mines - countFlags(finalBoard),
         closeCallCell,
       };
@@ -349,19 +337,12 @@ function roguelikeReducer(
         newDraftOptions = clearResult.draftOptions;
       }
 
-      // Update danger cells
-      let newDangerCells = state.dangerCells;
-      if (hasPowerUp(state.run, 'danger-sense') && newPhase === GamePhase.Playing) {
-        newDangerCells = calculateDangerCells(newBoard);
-      }
-
       return {
         ...state,
         board: newBoard,
         run: newRun,
         phase: newPhase,
         draftOptions: newDraftOptions,
-        dangerCells: newDangerCells,
         minesRemaining: state.floorConfig.mines - countFlags(newBoard),
       };
     }

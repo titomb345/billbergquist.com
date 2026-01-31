@@ -68,7 +68,7 @@ export const POWER_UP_POOL: PowerUp[] = [
   {
     id: 'danger-sense',
     name: 'Danger Sense',
-    description: 'Cells near 3+ mines have a subtle glow',
+    description: 'Up to 3 cells near 3+ mines have a subtle glow',
     icon: '⚠️',
     type: 'passive',
   },
@@ -91,6 +91,18 @@ export const SCORING = {
   TIME_BONUS_THRESHOLD: 60, // Seconds under which time bonus kicks in
   TIME_BONUS_MULTIPLIER: 2, // Bonus multiplier for fast clears
 };
+
+// Look up a power-up by ID from all available powerups
+export function getPowerUpById(id: PowerUpId): PowerUp | null {
+  // Check the main pool first
+  const fromPool = POWER_UP_POOL.find((p) => p.id === id);
+  if (fromPool) return fromPool;
+
+  // Check unlockable powerups
+  if (MINE_DETECTOR_POWER_UP.id === id) return MINE_DETECTOR_POWER_UP;
+
+  return null;
+}
 
 // Get available power-ups based on unlocks
 export function getAvailablePowerUps(unlocks: PowerUpId[]): PowerUp[] {

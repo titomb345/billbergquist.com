@@ -18,6 +18,7 @@ import {
   FloorConfig,
 } from '../types';
 import { createRoguelikeInitialState, createInitialRunState } from '../logic/roguelikeLogic';
+import { getPowerUpById } from '../constants';
 
 const GAME_STATE_KEY = 'minesweeper-descent-save';
 const STATS_KEY = 'minesweeper-roguelike-stats';
@@ -188,20 +189,19 @@ export function loadGameState(currentUnlocks: PowerUpId[]): RoguelikeGameState |
       }))
     );
 
-    // Convert power-ups with proper types, filtering out unknown power-ups
+    // Convert power-ups by looking up from constants (ensures descriptions are always current)
     const convertPowerUp = (p: (typeof validated.run.activePowerUps)[0]): PowerUp | null => {
       if (!isKnownPowerUpId(p.id)) {
         console.warn(`Filtering unknown power-up: ${p.id}`);
         return null;
       }
-      return {
-        id: p.id as PowerUpId,
-        name: p.name,
-        description: p.description,
-        icon: p.icon,
-        type: p.type,
-        usesPerFloor: p.usesPerFloor,
-      };
+      // Always use the canonical powerup data from constants
+      const canonical = getPowerUpById(p.id as PowerUpId);
+      if (!canonical) {
+        console.warn(`Power-up not found in pool: ${p.id}`);
+        return null;
+      }
+      return canonical;
     };
 
     // Filter and convert active power-ups

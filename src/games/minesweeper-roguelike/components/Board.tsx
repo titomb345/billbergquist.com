@@ -12,6 +12,7 @@ interface BoardProps {
   onXRay?: (row: number, col: number) => void;
   onCellHover?: (row: number, col: number) => void;
   onCellHoverEnd?: () => void;
+  detectorCenter?: { row: number; col: number } | null;
 }
 
 function Board({
@@ -25,7 +26,16 @@ function Board({
   onXRay,
   onCellHover,
   onCellHoverEnd,
+  detectorCenter,
 }: BoardProps) {
+  // Check if a cell is within the 5x5 detector zone
+  const isInDetectorZone = (row: number, col: number): boolean => {
+    if (!detectorCenter) return false;
+    const rowDiff = Math.abs(row - detectorCenter.row);
+    const colDiff = Math.abs(col - detectorCenter.col);
+    return rowDiff <= 2 && colDiff <= 2;
+  };
+
   return (
     <div
       className={`minesweeper-board ${xRayMode ? 'xray-mode' : ''}`}
@@ -46,6 +56,7 @@ function Board({
               onXRay={onXRay}
               onHover={onCellHover}
               onHoverEnd={onCellHoverEnd}
+              inDetectorZone={isInDetectorZone(cell.row, cell.col)}
             />
           ))}
         </div>

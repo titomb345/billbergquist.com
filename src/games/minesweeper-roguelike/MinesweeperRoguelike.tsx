@@ -108,6 +108,7 @@ function Minesweeper() {
               onXRay={handleXRayClick}
               onCellHover={hasMineDetector ? handleCellHover : undefined}
               onCellHoverEnd={hasMineDetector ? handleCellHoverEnd : undefined}
+              detectorCenter={hasMineDetector && !state.isFirstClick ? hoveredCell : null}
             />
           </div>
         </>

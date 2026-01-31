@@ -76,8 +76,9 @@ export function hasPowerUp(run: RunState, powerUpId: PowerUpId): boolean {
 }
 
 // Calculate danger cells (cells adjacent to 3+ mines) for Danger Sense
+// Limited to 3 cells maximum to balance the power-up
 export function calculateDangerCells(board: Cell[][]): Set<string> {
-  const dangerCells = new Set<string>();
+  const candidates: string[] = [];
   const rows = board.length;
   const cols = board[0]?.length || 0;
 
@@ -85,12 +86,18 @@ export function calculateDangerCells(board: Cell[][]): Set<string> {
     for (let col = 0; col < cols; col++) {
       const cell = board[row][col];
       if (cell.state === CellState.Hidden && !cell.isMine && cell.adjacentMines >= 3) {
-        dangerCells.add(`${row},${col}`);
+        candidates.push(`${row},${col}`);
       }
     }
   }
 
-  return dangerCells;
+  // Shuffle and take up to 3 cells
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+
+  return new Set(candidates.slice(0, 3));
 }
 
 // Apply Lucky Start: reveal 3 random safe cells scattered across the board
