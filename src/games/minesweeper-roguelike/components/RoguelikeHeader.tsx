@@ -13,6 +13,7 @@ interface RoguelikeHeaderProps {
   xRayMode?: boolean;
   canUseXRay?: boolean;
   onToggleXRay?: () => void;
+  mineDetectorCount?: number | null;
 }
 
 interface HoveredPowerUp {
@@ -31,6 +32,7 @@ function RoguelikeHeader({
   xRayMode = false,
   canUseXRay = false,
   onToggleXRay,
+  mineDetectorCount,
 }: RoguelikeHeaderProps) {
   const [hoveredPowerUp, setHoveredPowerUp] = useState<HoveredPowerUp | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -102,16 +104,21 @@ function RoguelikeHeader({
             const isXRayUsed = isXRay && run.xRayUsedThisFloor;
             const isUsed = isIronWillUsed || isXRayUsed;
             const isClickable = isXRay && canUseXRay && onToggleXRay;
+            const isMineDetector = powerUp.id === 'mine-detector';
+            const showDetectorCount = isMineDetector && mineDetectorCount != null;
 
             return (
               <span
                 key={powerUp.id}
-                className={`powerup-icon-wrapper ${isUsed ? 'used' : ''} ${isXRay ? 'xray' : ''} ${xRayMode ? 'xray-active' : ''} ${isClickable ? 'clickable' : ''}`}
+                className={`powerup-icon-wrapper ${isUsed ? 'used' : ''} ${isXRay ? 'xray' : ''} ${xRayMode ? 'xray-active' : ''} ${isClickable ? 'clickable' : ''} ${showDetectorCount ? 'detector-active' : ''}`}
                 onMouseEnter={(e) => handleMouseEnter(powerUp, isUsed, e.currentTarget)}
                 onMouseLeave={() => setHoveredPowerUp(null)}
                 onClick={isClickable ? onToggleXRay : undefined}
               >
                 <span className="powerup-icon-emoji">{powerUp.icon}</span>
+                {showDetectorCount && (
+                  <span className="mine-detector-badge">{mineDetectorCount}</span>
+                )}
               </span>
             );
           })}

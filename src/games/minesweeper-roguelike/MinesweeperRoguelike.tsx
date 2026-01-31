@@ -30,7 +30,7 @@ function Minesweeper() {
     skipDraft,
     explosionComplete,
     floorClearComplete,
-  } = useRoguelikeState(isConstrained);
+  } = useRoguelikeState(isConstrained, stats.unlocks);
 
   const [xRayMode, setXRayMode] = useState(false);
   const [hoveredCell, setHoveredCell] = useState<{ row: number; col: number } | null>(null);
@@ -93,15 +93,9 @@ function Minesweeper() {
             xRayMode={xRayMode}
             canUseXRay={canUseXRay}
             onToggleXRay={handleToggleXRayMode}
+            mineDetectorCount={mineDetectorCount}
           />
           {xRayMode && <div className="xray-hint">Click a cell to reveal 3×3 area</div>}
-          {mineDetectorCount !== null && (
-            <div className="mine-detector-display">
-              <span className="mine-detector-icon">📡</span>
-              <span className="mine-detector-count">{mineDetectorCount}</span>
-              <span className="mine-detector-label">mines nearby</span>
-            </div>
-          )}
           <div className="minesweeper">
             <Board
               board={state.board}
