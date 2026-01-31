@@ -1,5 +1,5 @@
 import { useReducer, useEffect, useCallback } from 'react';
-import { RoguelikeGameState, RoguelikeAction, PowerUp, GamePhase } from '../types';
+import { RoguelikeGameState, RoguelikeAction, PowerUp, GamePhase, RunState, Cell, CellState } from '../types';
 import {
   createEmptyBoard,
   placeMines,
@@ -62,7 +62,7 @@ function loadSavedState(): RoguelikeGameState | null {
     if (!saved) return null;
     const state = deserializeState(saved);
     // Only restore if in an active game phase
-    if (state && (state.phase === 'playing' || state.phase === 'draft')) {
+    if (state && (state.phase === GamePhase.Playing || state.phase === GamePhase.Draft)) {
       return state;
     }
     return null;
@@ -74,7 +74,7 @@ function loadSavedState(): RoguelikeGameState | null {
 function saveState(state: RoguelikeGameState): void {
   try {
     // Only save during active gameplay
-    if (state.phase === 'playing' || state.phase === 'draft') {
+    if (state.phase === GamePhase.Playing || state.phase === GamePhase.Draft) {
       localStorage.setItem(STORAGE_KEY, serializeState(state));
     }
   } catch {
@@ -90,6 +90,55 @@ function clearSavedState(): void {
   }
 }
 
+// Helper: Handle floor clear transition and calculate draft options
+function handleFloorClearTransition(
+  run: RunState,
+  time: number
+): { phase: GamePhase; score: number; draftOptions: PowerUp[] } {
+  const score = run.score + calculateFloorClearBonus(run.currentFloor, time);
+  const draftOptions = isFinalFloor(run.currentFloor)
+    ? []
+    : selectDraftOptions(
+        getAvailablePowerUps([]),
+        run.activePowerUps.map((p) => p.id),
+        3
+      );
+
+  return { phase: GamePhase.FloorClear, score, draftOptions };
+}
+
+// Helper: Apply Iron Will protection when hitting a mine
+function applyIronWillProtection(
+  board: Cell[][],
+  run: RunState,
+  mineRow: number,
+  mineCol: number,
+  isChordHit: boolean = false
+): { board: Cell[][]; run: RunState; saved: boolean } {
+  if (hasPowerUp(run, 'iron-will') && run.ironWillAvailable) {
+    let newBoard: Cell[][];
+    if (isChordHit) {
+      // For chord hits, flag all revealed mines
+      newBoard = board.map((r) =>
+        r.map((c) => (c.isMine && c.state === CellState.Revealed ? { ...c, state: CellState.Flagged } : c))
+      );
+    } else {
+      // For single cell hits, flag just the hit mine
+      newBoard = board.map((r) =>
+        r.map((c) =>
+          c.row === mineRow && c.col === mineCol ? { ...c, state: CellState.Flagged } : c
+        )
+      );
+    }
+    return {
+      board: newBoard,
+      run: { ...run, ironWillAvailable: false },
+      saved: true,
+    };
+  }
+  return { board, run, saved: false };
+}
+
 function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): RoguelikeGameState {
   switch (action.type) {
     case 'START_RUN': {
@@ -100,7 +149,7 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
     case 'GO_TO_START': {
       return {
         ...state,
-        phase: 'start',
+        phase: GamePhase.Start,
       };
     }
 
@@ -113,7 +162,7 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
     }
 
     case 'TICK': {
-      if (state.phase !== 'playing') return state;
+      if (state.phase !== GamePhase.Playing) return state;
       return {
         ...state,
         time: Math.min(state.time + 1, 999),
@@ -121,11 +170,11 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
     }
 
     case 'REVEAL_CELL': {
-      if (state.phase !== 'playing') return state;
+      if (state.phase !== GamePhase.Playing) return state;
 
       const { row, col } = action;
       const cell = state.board[row][col];
-      if (cell.state !== 'hidden') return state;
+      if (cell.state !== CellState.Hidden) return state;
 
       let newBoard = state.board;
       let newRun = { ...state.run };
@@ -139,20 +188,20 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
         newBoard = placeMines(createEmptyBoard(config), config, row, col);
 
         // Apply Sixth Sense on first click
-        if (hasPowerUp(state, 'sixth-sense')) {
+        if (hasPowerUp(state.run, 'sixth-sense')) {
           newBoard = applySixthSense(newBoard, row, col);
         } else {
           newBoard = revealCell(newBoard, row, col);
         }
 
         // Apply Lucky Start after mines are placed (if not used yet this floor)
-        if (hasPowerUp(state, 'lucky-start') && !state.run.luckyStartUsedThisFloor) {
+        if (hasPowerUp(state.run, 'lucky-start') && !state.run.luckyStartUsedThisFloor) {
           newBoard = applyLuckyStart(newBoard);
           newRun.luckyStartUsedThisFloor = true;
         }
 
         // Calculate danger cells if player has Danger Sense
-        if (hasPowerUp(state, 'danger-sense')) {
+        if (hasPowerUp(state.run, 'danger-sense')) {
           newDangerCells = calculateDangerCells(newBoard);
         }
 
@@ -169,41 +218,31 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
 
       // Check for mine hit
       if (newBoard[row][col].isMine) {
-        // Check for Iron Will
-        if (hasPowerUp(state, 'iron-will') && state.run.ironWillAvailable) {
-          // Iron Will saves the player! Mark the mine as flagged and continue
-          newBoard = newBoard.map((r) =>
-            r.map((c) => (c.row === row && c.col === col ? { ...c, state: 'flagged' as const } : c))
-          );
-          newRun.ironWillAvailable = false;
+        const protection = applyIronWillProtection(newBoard, newRun, row, col);
+        if (protection.saved) {
+          newBoard = protection.board;
+          newRun = protection.run;
         } else {
           // Game over - start explosion animation
-          newPhase = 'exploding';
           return {
             ...state,
             board: newBoard,
             isFirstClick: false,
-            phase: newPhase,
+            phase: GamePhase.Exploding,
             run: newRun,
             explodedCell: { row, col },
             minesRemaining: state.floorConfig.mines - countFlags(newBoard),
           };
         }
       } else if (checkFloorCleared(newBoard)) {
-        // Floor cleared! Show celebration animation
-        newRun.score += calculateFloorClearBonus(newRun.currentFloor, state.time);
-        newPhase = 'floor-clear';
-
-        // Pre-calculate draft options for after the animation
-        if (!isFinalFloor(newRun.currentFloor)) {
-          const ownedIds = newRun.activePowerUps.map((p) => p.id);
-          const availablePool = getAvailablePowerUps([]);
-          newDraftOptions = selectDraftOptions(availablePool, ownedIds, 3);
-        }
+        const clearResult = handleFloorClearTransition(newRun, state.time);
+        newRun.score = clearResult.score;
+        newPhase = clearResult.phase;
+        newDraftOptions = clearResult.draftOptions;
       }
 
       // Update danger cells after reveal
-      if (hasPowerUp(state, 'danger-sense') && newPhase === 'playing') {
+      if (hasPowerUp(state.run, 'danger-sense') && newPhase === GamePhase.Playing) {
         newDangerCells = calculateDangerCells(newBoard);
       }
 
@@ -220,12 +259,12 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
     }
 
     case 'TOGGLE_FLAG': {
-      if (state.phase !== 'playing') return state;
+      if (state.phase !== GamePhase.Playing) return state;
       if (state.isFirstClick) return state; // Can't flag before first click
 
       const { row, col } = action;
       const cell = state.board[row][col];
-      if (cell.state === 'revealed') return state;
+      if (cell.state === CellState.Revealed) return state;
 
       const newBoard = toggleFlag(state.board, row, col);
 
@@ -237,7 +276,7 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
     }
 
     case 'CHORD_CLICK': {
-      if (state.phase !== 'playing') return state;
+      if (state.phase !== GamePhase.Playing) return state;
 
       const { row, col } = action;
       const { board: newBoard, hitMine } = chordReveal(state.board, row, col);
@@ -253,55 +292,42 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
       newRun.score += calculateRevealScore(newRevealed - prevRevealed, newRun.currentFloor);
 
       if (hitMine) {
-        // Check for Iron Will
-        if (hasPowerUp(state, 'iron-will') && state.run.ironWillAvailable) {
-          // Iron Will protects from chord mine hits too
-          // Find the mine that was hit and flag it
-          finalBoard = newBoard.map((r) =>
-            r.map((c) =>
-              c.isMine && c.state === 'revealed' ? { ...c, state: 'flagged' as const } : c
-            )
-          );
-          newRun.ironWillAvailable = false;
+        const protection = applyIronWillProtection(newBoard, newRun, row, col, true);
+        if (protection.saved) {
+          finalBoard = protection.board;
+          newRun = protection.run;
         } else {
           // Find which mine was hit for explosion animation
           let hitRow = row,
             hitCol = col;
           for (let r = 0; r < newBoard.length && hitRow === row; r++) {
             for (let c = 0; c < newBoard[0].length; c++) {
-              if (newBoard[r][c].isMine && newBoard[r][c].state === 'revealed') {
+              if (newBoard[r][c].isMine && newBoard[r][c].state === CellState.Revealed) {
                 hitRow = r;
                 hitCol = c;
                 break;
               }
             }
           }
-          newPhase = 'exploding';
           return {
             ...state,
             board: newBoard,
-            phase: newPhase,
+            phase: GamePhase.Exploding,
             run: newRun,
             explodedCell: { row: hitRow, col: hitCol },
             minesRemaining: state.floorConfig.mines - countFlags(newBoard),
           };
         }
       } else if (checkFloorCleared(newBoard)) {
-        // Floor cleared! Show celebration animation
-        newRun.score += calculateFloorClearBonus(newRun.currentFloor, state.time);
-        newPhase = 'floor-clear';
-
-        // Pre-calculate draft options for after the animation
-        if (!isFinalFloor(newRun.currentFloor)) {
-          const ownedIds = newRun.activePowerUps.map((p) => p.id);
-          const availablePool = getAvailablePowerUps([]);
-          newDraftOptions = selectDraftOptions(availablePool, ownedIds, 3);
-        }
+        const clearResult = handleFloorClearTransition(newRun, state.time);
+        newRun.score = clearResult.score;
+        newPhase = clearResult.phase;
+        newDraftOptions = clearResult.draftOptions;
       }
 
       // Update danger cells
       let newDangerCells = state.dangerCells;
-      if (hasPowerUp(state, 'danger-sense') && newPhase === 'playing') {
+      if (hasPowerUp(state.run, 'danger-sense') && newPhase === GamePhase.Playing) {
         newDangerCells = calculateDangerCells(finalBoard);
       }
 
@@ -317,8 +343,8 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
     }
 
     case 'USE_X_RAY': {
-      if (state.phase !== 'playing') return state;
-      if (!hasPowerUp(state, 'x-ray-vision')) return state;
+      if (state.phase !== GamePhase.Playing) return state;
+      if (!hasPowerUp(state.run, 'x-ray-vision')) return state;
       if (state.run.xRayUsedThisFloor) return state;
       if (state.isFirstClick) return state; // Can't use before mines are placed
 
@@ -339,21 +365,15 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
       let newDraftOptions: PowerUp[] = [];
 
       if (checkFloorCleared(newBoard)) {
-        // Floor cleared! Show celebration animation
-        newRun.score += calculateFloorClearBonus(newRun.currentFloor, state.time);
-        newPhase = 'floor-clear';
-
-        // Pre-calculate draft options for after the animation
-        if (!isFinalFloor(newRun.currentFloor)) {
-          const ownedIds = newRun.activePowerUps.map((p) => p.id);
-          const availablePool = getAvailablePowerUps([]);
-          newDraftOptions = selectDraftOptions(availablePool, ownedIds, 3);
-        }
+        const clearResult = handleFloorClearTransition(newRun, state.time);
+        newRun.score = clearResult.score;
+        newPhase = clearResult.phase;
+        newDraftOptions = clearResult.draftOptions;
       }
 
       // Update danger cells
       let newDangerCells = state.dangerCells;
-      if (hasPowerUp(state, 'danger-sense') && newPhase === 'playing') {
+      if (hasPowerUp(state.run, 'danger-sense') && newPhase === GamePhase.Playing) {
         newDangerCells = calculateDangerCells(newBoard);
       }
 
@@ -369,7 +389,7 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
     }
 
     case 'SELECT_POWER_UP': {
-      if (state.phase !== 'draft') return state;
+      if (state.phase !== GamePhase.Draft) return state;
 
       const newRun = {
         ...state.run,
@@ -383,7 +403,7 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
 
       return {
         ...state,
-        phase: 'playing',
+        phase: GamePhase.Playing,
         board: newBoard,
         floorConfig,
         minesRemaining: floorConfig.mines,
@@ -401,7 +421,7 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
     }
 
     case 'SKIP_DRAFT': {
-      if (state.phase !== 'draft') return state;
+      if (state.phase !== GamePhase.Draft) return state;
 
       // Set up next floor with bonus points
       const nextFloor = state.run.currentFloor + 1;
@@ -410,7 +430,7 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
 
       return {
         ...state,
-        phase: 'playing',
+        phase: GamePhase.Playing,
         board: newBoard,
         floorConfig,
         minesRemaining: floorConfig.mines,
@@ -429,7 +449,7 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
     }
 
     case 'EXPLOSION_COMPLETE': {
-      if (state.phase !== 'exploding') return state;
+      if (state.phase !== GamePhase.Exploding) return state;
 
       // Reveal all mines and transition to run-over
       const finalBoard = revealAllMines(state.board);
@@ -437,26 +457,26 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
       return {
         ...state,
         board: finalBoard,
-        phase: 'run-over',
+        phase: GamePhase.RunOver,
         explodedCell: null,
       };
     }
 
     case 'FLOOR_CLEAR_COMPLETE': {
-      if (state.phase !== 'floor-clear') return state;
+      if (state.phase !== GamePhase.FloorClear) return state;
 
       // Check if this was the final floor
       if (isFinalFloor(state.run.currentFloor)) {
         return {
           ...state,
-          phase: 'victory',
+          phase: GamePhase.Victory,
         };
       }
 
       // Move to draft phase
       return {
         ...state,
-        phase: 'draft',
+        phase: GamePhase.Draft,
       };
     }
 
@@ -485,9 +505,9 @@ export function useRoguelikeState(isMobile: boolean = false) {
 
   // Save state to localStorage during active gameplay
   useEffect(() => {
-    if (state.phase === 'playing' || state.phase === 'draft' || state.phase === 'floor-clear') {
+    if (state.phase === GamePhase.Playing || state.phase === GamePhase.Draft || state.phase === GamePhase.FloorClear) {
       saveState(state);
-    } else if (state.phase === 'start' || state.phase === 'run-over' || state.phase === 'victory') {
+    } else if (state.phase === GamePhase.Start || state.phase === GamePhase.RunOver || state.phase === GamePhase.Victory) {
       // Clear saved state when not in active gameplay
       clearSavedState();
     }
@@ -495,7 +515,7 @@ export function useRoguelikeState(isMobile: boolean = false) {
 
   // Timer effect
   useEffect(() => {
-    if (state.phase !== 'playing') return;
+    if (state.phase !== GamePhase.Playing) return;
 
     const interval = setInterval(() => {
       dispatch({ type: 'TICK' });

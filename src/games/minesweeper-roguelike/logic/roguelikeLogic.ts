@@ -1,4 +1,4 @@
-import { Cell, RoguelikeGameState, RunState } from '../types';
+import { Cell, CellState, GamePhase, RoguelikeGameState, RunState } from '../types';
 import { getFloorConfig, SCORING, MAX_FLOOR } from '../constants';
 import { createEmptyBoard, revealCell, revealCascade } from './gameLogic';
 
@@ -18,7 +18,7 @@ export function createInitialRunState(): RunState {
 export function createRoguelikeInitialState(isMobile: boolean): RoguelikeGameState {
   const floorConfig = getFloorConfig(1, isMobile);
   return {
-    phase: 'start',
+    phase: GamePhase.Start,
     board: createEmptyBoard(floorConfig),
     floorConfig,
     minesRemaining: floorConfig.mines,
@@ -39,7 +39,7 @@ export function setupFloor(state: RoguelikeGameState, floor: number): RoguelikeG
 
   return {
     ...state,
-    phase: 'playing',
+    phase: GamePhase.Playing,
     board,
     floorConfig,
     minesRemaining: floorConfig.mines,
@@ -57,8 +57,8 @@ export function setupFloor(state: RoguelikeGameState, floor: number): RoguelikeG
 }
 
 // Check if player has a specific power-up
-export function hasPowerUp(state: RoguelikeGameState, powerUpId: string): boolean {
-  return state.run.activePowerUps.some((p) => p.id === powerUpId);
+export function hasPowerUp(run: RunState, powerUpId: string): boolean {
+  return run.activePowerUps.some((p) => p.id === powerUpId);
 }
 
 // Calculate danger cells (cells adjacent to 3+ mines) for Danger Sense
@@ -70,7 +70,7 @@ export function calculateDangerCells(board: Cell[][]): Set<string> {
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
       const cell = board[row][col];
-      if (cell.state === 'hidden' && !cell.isMine && cell.adjacentMines >= 3) {
+      if (cell.state === CellState.Hidden && !cell.isMine && cell.adjacentMines >= 3) {
         dangerCells.add(`${row},${col}`);
       }
     }
@@ -85,12 +85,25 @@ export function applyLuckyStart(board: Cell[][]): Cell[][] {
   const rows = board.length;
   const cols = board[0].length;
 
+  // Pre-compute revealed positions once (optimization: O(n) instead of O(n) per safe cell)
+  const getRevealedPositions = (b: Cell[][]): Array<{ row: number; col: number }> => {
+    const positions: Array<{ row: number; col: number }> = [];
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (b[r][c].state === CellState.Revealed) {
+          positions.push({ row: r, col: c });
+        }
+      }
+    }
+    return positions;
+  };
+
   // Find all hidden safe cells
-  const getHiddenSafeCells = (b: Cell[][]) => {
-    const cells: { row: number; col: number }[] = [];
+  const getHiddenSafeCells = (b: Cell[][]): Array<{ row: number; col: number }> => {
+    const cells: Array<{ row: number; col: number }> = [];
     for (const row of b) {
       for (const cell of row) {
-        if (!cell.isMine && cell.state === 'hidden') {
+        if (!cell.isMine && cell.state === CellState.Hidden) {
           cells.push({ row: cell.row, col: cell.col });
         }
       }
@@ -103,16 +116,16 @@ export function applyLuckyStart(board: Cell[][]): Cell[][] {
     const safeCells = getHiddenSafeCells(newBoard);
     if (safeCells.length === 0) break;
 
+    // Cache revealed positions for this iteration
+    const revealedPositions = getRevealedPositions(newBoard);
+
     // Score cells by distance from revealed cells (prefer isolated cells)
+    // Now O(safeCells * revealedPositions) instead of O(safeCells * rows * cols)
     const scoredCells = safeCells.map((pos) => {
       let minDistToRevealed = Infinity;
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (newBoard[r][c].state === 'revealed') {
-            const dist = Math.abs(pos.row - r) + Math.abs(pos.col - c);
-            minDistToRevealed = Math.min(minDistToRevealed, dist);
-          }
-        }
+      for (const revealed of revealedPositions) {
+        const dist = Math.abs(pos.row - revealed.row) + Math.abs(pos.col - revealed.col);
+        minDistToRevealed = Math.min(minDistToRevealed, dist);
       }
       return { ...pos, score: minDistToRevealed };
     });
@@ -142,7 +155,7 @@ export function applySixthSense(board: Cell[][], clickRow: number, clickCol: num
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const cell = board[r][c];
-      if (!cell.isMine && cell.adjacentMines === 0 && cell.state === 'hidden') {
+      if (!cell.isMine && cell.adjacentMines === 0 && cell.state === CellState.Hidden) {
         const dist = Math.abs(r - clickRow) + Math.abs(c - clickCol);
         if (dist < bestDist) {
           bestDist = dist;
@@ -156,7 +169,7 @@ export function applySixthSense(board: Cell[][], clickRow: number, clickCol: num
   if (bestCell && (bestCell.row !== clickRow || bestCell.col !== clickCol)) {
     let newBoard = revealCell(board, bestCell.row, bestCell.col);
     // Also reveal the originally clicked cell if it's still hidden
-    if (newBoard[clickRow][clickCol].state === 'hidden') {
+    if (newBoard[clickRow][clickCol].state === CellState.Hidden) {
       newBoard = revealCell(newBoard, clickRow, clickCol);
     }
     return newBoard;
@@ -178,12 +191,12 @@ export function applyXRayVision(board: Cell[][], centerRow: number, centerCol: n
       const c = centerCol + dc;
       if (r >= 0 && r < rows && c >= 0 && c < cols) {
         const cell = newBoard[r][c];
-        if (cell.state === 'hidden') {
+        if (cell.state === CellState.Hidden) {
           if (cell.isMine) {
             // Mark mines as flagged instead of revealing
-            cell.state = 'flagged';
+            cell.state = CellState.Flagged;
           } else {
-            cell.state = 'revealed';
+            cell.state = CellState.Revealed;
             // Cascade if it's a 0
             if (cell.adjacentMines === 0) {
               return revealCascade(newBoard, r, c);
@@ -220,7 +233,7 @@ export function countRevealedCells(board: Cell[][]): number {
   let count = 0;
   for (const row of board) {
     for (const cell of row) {
-      if (cell.state === 'revealed' && !cell.isMine) {
+      if (cell.state === CellState.Revealed && !cell.isMine) {
         count++;
       }
     }
@@ -232,7 +245,7 @@ export function countRevealedCells(board: Cell[][]): number {
 export function checkFloorCleared(board: Cell[][]): boolean {
   for (const row of board) {
     for (const cell of row) {
-      if (!cell.isMine && cell.state !== 'revealed') {
+      if (!cell.isMine && cell.state !== CellState.Revealed) {
         return false;
       }
     }
@@ -245,13 +258,5 @@ export function isFinalFloor(floor: number): boolean {
   return floor >= MAX_FLOOR;
 }
 
-// Count flags on the board
-export function countFlags(board: Cell[][]): number {
-  let count = 0;
-  for (const row of board) {
-    for (const cell of row) {
-      if (cell.state === 'flagged') count++;
-    }
-  }
-  return count;
-}
+// Re-export countFlags from gameLogic to avoid duplication
+export { countFlags } from './gameLogic';

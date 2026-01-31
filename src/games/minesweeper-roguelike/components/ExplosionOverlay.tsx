@@ -1,5 +1,8 @@
 import { useEffect } from 'react';
 
+// Pre-allocate particle indices to avoid array allocation on each render
+const PARTICLE_INDICES = Array.from({ length: 12 }, (_, i) => i);
+
 interface ExplosionOverlayProps {
   onComplete: () => void;
 }
@@ -23,7 +26,7 @@ function ExplosionOverlay({ onComplete }: ExplosionOverlayProps) {
         <div className="explosion-flash" />
 
         {/* Pixel debris particles */}
-        {[...Array(12)].map((_, i) => (
+        {PARTICLE_INDICES.map((i) => (
           <div
             key={i}
             className="explosion-particle"

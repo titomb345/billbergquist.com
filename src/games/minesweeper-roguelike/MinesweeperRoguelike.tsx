@@ -10,6 +10,7 @@ import RunOverScreen from './components/RunOverScreen';
 import ExplosionOverlay from './components/ExplosionOverlay';
 import FloorClearOverlay from './components/FloorClearOverlay';
 import { isFinalFloor } from './logic/roguelikeLogic';
+import { GamePhase } from './types';
 import './styles.css';
 
 function Minesweeper() {
@@ -55,15 +56,15 @@ function Minesweeper() {
     startRun();
   };
 
-  const isGameOver = state.phase === 'run-over' || state.phase === 'victory';
+  const isGameOver = state.phase === GamePhase.RunOver || state.phase === GamePhase.Victory;
 
   return (
     <div ref={containerRef} className="minesweeper-container roguelike-mode">
       {/* Start Screen */}
-      {state.phase === 'start' && <StartScreen stats={stats} onStartRun={handleStartRun} />}
+      {state.phase === GamePhase.Start && <StartScreen stats={stats} onStartRun={handleStartRun} />}
 
       {/* Main Game */}
-      {state.phase === 'playing' && (
+      {state.phase === GamePhase.Playing && (
         <>
           <RoguelikeHeader
             floor={state.run.currentFloor}
@@ -93,7 +94,7 @@ function Minesweeper() {
       )}
 
       {/* Power-Up Draft */}
-      {state.phase === 'draft' && (
+      {state.phase === GamePhase.Draft && (
         <PowerUpDraft
           options={state.draftOptions}
           floorCleared={state.run.currentFloor}
@@ -104,10 +105,10 @@ function Minesweeper() {
       )}
 
       {/* Explosion Animation */}
-      {state.phase === 'exploding' && <ExplosionOverlay onComplete={explosionComplete} />}
+      {state.phase === GamePhase.Exploding && <ExplosionOverlay onComplete={explosionComplete} />}
 
       {/* Floor Clear Animation */}
-      {state.phase === 'floor-clear' && (
+      {state.phase === GamePhase.FloorClear && (
         <FloorClearOverlay
           floor={state.run.currentFloor}
           isVictory={isFinalFloor(state.run.currentFloor)}
@@ -118,7 +119,7 @@ function Minesweeper() {
       {/* Run Over / Victory */}
       {isGameOver && (
         <RunOverScreen
-          isVictory={state.phase === 'victory'}
+          isVictory={state.phase === GamePhase.Victory}
           floor={state.run.currentFloor}
           score={state.run.score}
           time={state.time}

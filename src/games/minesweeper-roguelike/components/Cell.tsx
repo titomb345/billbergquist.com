@@ -1,4 +1,5 @@
-import { Cell as CellType } from '../types';
+import { memo } from 'react';
+import { Cell as CellType, CellState } from '../types';
 import { MineIcon, FlagIcon } from './icons';
 
 interface CellProps {
@@ -12,7 +13,7 @@ interface CellProps {
   onXRay?: (row: number, col: number) => void;
 }
 
-function Cell({
+function CellComponent({
   cell,
   onReveal,
   onFlag,
@@ -32,9 +33,9 @@ function Cell({
       return;
     }
 
-    if (cell.state === 'revealed' && cell.adjacentMines > 0) {
+    if (cell.state === CellState.Revealed && cell.adjacentMines > 0) {
       onChord(cell.row, cell.col);
-    } else if (cell.state === 'hidden') {
+    } else if (cell.state === CellState.Hidden) {
       onReveal(cell.row, cell.col);
     }
   };
@@ -49,7 +50,7 @@ function Cell({
     if (e.button === 1) {
       e.preventDefault();
       if (gameOver) return;
-      if (cell.state === 'revealed' && cell.adjacentMines > 0) {
+      if (cell.state === CellState.Revealed && cell.adjacentMines > 0) {
         onChord(cell.row, cell.col);
       }
     }
@@ -58,7 +59,7 @@ function Cell({
   const getClassName = () => {
     const classes = ['cell'];
 
-    if (cell.state === 'hidden') {
+    if (cell.state === CellState.Hidden) {
       classes.push('cell-hidden');
       if (hasDanger) {
         classes.push('cell-danger');
@@ -66,9 +67,9 @@ function Cell({
       if (xRayMode) {
         classes.push('cell-xray-target');
       }
-    } else if (cell.state === 'flagged') {
+    } else if (cell.state === CellState.Flagged) {
       classes.push('cell-flagged');
-    } else if (cell.state === 'revealed') {
+    } else if (cell.state === CellState.Revealed) {
       classes.push('cell-revealed');
       if (cell.isMine) {
         classes.push('cell-mine');
@@ -81,10 +82,10 @@ function Cell({
   };
 
   const getContent = () => {
-    if (cell.state === 'flagged') {
+    if (cell.state === CellState.Flagged) {
       return <FlagIcon />;
     }
-    if (cell.state === 'revealed') {
+    if (cell.state === CellState.Revealed) {
       if (cell.isMine) {
         return <MineIcon />;
       }
@@ -106,5 +107,18 @@ function Cell({
     </div>
   );
 }
+
+// Memoize Cell to prevent re-renders when props haven't changed
+// On a 12x12 board, this prevents 144 unnecessary re-renders per state change
+const Cell = memo(CellComponent, (prev, next) => {
+  return (
+    prev.cell.state === next.cell.state &&
+    prev.cell.adjacentMines === next.cell.adjacentMines &&
+    prev.cell.isMine === next.cell.isMine &&
+    prev.gameOver === next.gameOver &&
+    prev.hasDanger === next.hasDanger &&
+    prev.xRayMode === next.xRayMode
+  );
+});
 
 export default Cell;

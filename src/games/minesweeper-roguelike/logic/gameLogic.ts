@@ -1,4 +1,4 @@
-import { Cell, GameState, Difficulty, DifficultyConfig, getDifficultyConfig } from '../types';
+import { Cell, CellState, DifficultyConfig } from '../types';
 
 export function createEmptyBoard(config: DifficultyConfig): Cell[][] {
   const board: Cell[][] = [];
@@ -9,7 +9,7 @@ export function createEmptyBoard(config: DifficultyConfig): Cell[][] {
         row,
         col,
         isMine: false,
-        state: 'hidden',
+        state: CellState.Hidden,
         adjacentMines: 0,
       });
     }
@@ -92,9 +92,9 @@ export function revealCell(board: Cell[][], row: number, col: number): Cell[][] 
   const newBoard = board.map((r) => r.map((cell) => ({ ...cell })));
   const cell = newBoard[row][col];
 
-  if (cell.state !== 'hidden') return newBoard;
+  if (cell.state !== CellState.Hidden) return newBoard;
 
-  cell.state = 'revealed';
+  cell.state = CellState.Revealed;
 
   // If it's a mine, just reveal it
   if (cell.isMine) return newBoard;
@@ -121,9 +121,9 @@ export function revealCascade(board: Cell[][], startRow: number, startCol: numbe
     visited.add(key);
 
     const cell = board[row][col];
-    if (cell.state === 'flagged' || cell.isMine) continue;
+    if (cell.state === CellState.Flagged || cell.isMine) continue;
 
-    cell.state = 'revealed';
+    cell.state = CellState.Revealed;
 
     // Only continue cascading if this cell has no adjacent mines
     if (cell.adjacentMines === 0) {
@@ -132,7 +132,7 @@ export function revealCascade(board: Cell[][], startRow: number, startCol: numbe
           if (dr === 0 && dc === 0) continue;
           const r = row + dr;
           const c = col + dc;
-          if (r >= 0 && r < rows && c >= 0 && c < cols && board[r][c].state === 'hidden') {
+          if (r >= 0 && r < rows && c >= 0 && c < cols && board[r][c].state === CellState.Hidden) {
             stack.push([r, c]);
           }
         }
@@ -147,9 +147,9 @@ export function toggleFlag(board: Cell[][], row: number, col: number): Cell[][] 
   const newBoard = board.map((r) => r.map((cell) => ({ ...cell })));
   const cell = newBoard[row][col];
 
-  if (cell.state === 'revealed') return newBoard;
+  if (cell.state === CellState.Revealed) return newBoard;
 
-  cell.state = cell.state === 'flagged' ? 'hidden' : 'flagged';
+  cell.state = cell.state === CellState.Flagged ? CellState.Hidden : CellState.Flagged;
   return newBoard;
 }
 
@@ -161,7 +161,7 @@ export function chordReveal(
   const cell = board[row][col];
 
   // Only works on revealed cells with a number
-  if (cell.state !== 'revealed' || cell.adjacentMines === 0) {
+  if (cell.state !== CellState.Revealed || cell.adjacentMines === 0) {
     return { board, hitMine: false };
   }
 
@@ -175,7 +175,7 @@ export function chordReveal(
       if (dr === 0 && dc === 0) continue;
       const r = row + dr;
       const c = col + dc;
-      if (r >= 0 && r < rows && c >= 0 && c < cols && board[r][c].state === 'flagged') {
+      if (r >= 0 && r < rows && c >= 0 && c < cols && board[r][c].state === CellState.Flagged) {
         flagCount++;
       }
     }
@@ -197,10 +197,10 @@ export function chordReveal(
       const c = col + dc;
       if (r >= 0 && r < rows && c >= 0 && c < cols) {
         const adjacentCell = newBoard[r][c];
-        if (adjacentCell.state === 'hidden') {
+        if (adjacentCell.state === CellState.Hidden) {
           if (adjacentCell.isMine) {
             hitMine = true;
-            adjacentCell.state = 'revealed';
+            adjacentCell.state = CellState.Revealed;
           } else {
             newBoard = revealCell(newBoard, r, c);
           }
@@ -216,7 +216,7 @@ export function checkWin(board: Cell[][]): boolean {
   for (const row of board) {
     for (const cell of row) {
       // If there's a non-mine cell that's not revealed, game isn't won yet
-      if (!cell.isMine && cell.state !== 'revealed') {
+      if (!cell.isMine && cell.state !== CellState.Revealed) {
         return false;
       }
     }
@@ -228,7 +228,7 @@ export function revealAllMines(board: Cell[][]): Cell[][] {
   return board.map((row) =>
     row.map((cell) => ({
       ...cell,
-      state: cell.isMine ? 'revealed' : cell.state,
+      state: cell.isMine ? CellState.Revealed : cell.state,
     }))
   );
 }
@@ -237,21 +237,8 @@ export function countFlags(board: Cell[][]): number {
   let count = 0;
   for (const row of board) {
     for (const cell of row) {
-      if (cell.state === 'flagged') count++;
+      if (cell.state === CellState.Flagged) count++;
     }
   }
   return count;
-}
-
-export function createInitialState(difficulty: Difficulty, isMobile: boolean = false): GameState {
-  const config = getDifficultyConfig(difficulty, isMobile);
-  return {
-    board: createEmptyBoard(config),
-    difficulty,
-    status: 'idle',
-    minesRemaining: config.mines,
-    time: 0,
-    isFirstClick: true,
-    isMobile,
-  };
 }

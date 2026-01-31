@@ -1,4 +1,8 @@
-export type CellState = 'hidden' | 'revealed' | 'flagged';
+export enum CellState {
+  Hidden = 'hidden',
+  Revealed = 'revealed',
+  Flagged = 'flagged',
+}
 
 export interface Cell {
   row: number;
@@ -81,7 +85,15 @@ export interface FloorConfig {
 }
 
 // Game phases for roguelike mode
-export type GamePhase = 'start' | 'playing' | 'floor-clear' | 'draft' | 'exploding' | 'run-over' | 'victory';
+export enum GamePhase {
+  Start = 'start',
+  Playing = 'playing',
+  FloorClear = 'floor-clear',
+  Draft = 'draft',
+  Exploding = 'exploding',
+  RunOver = 'run-over',
+  Victory = 'victory',
+}
 
 // Run state tracks current roguelike run
 export interface RunState {

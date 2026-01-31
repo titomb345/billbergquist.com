@@ -1,5 +1,8 @@
 import { useEffect } from 'react';
 
+// Pre-allocate particle indices to avoid array allocation on each render
+const SPARKLE_INDICES = Array.from({ length: 16 }, (_, i) => i);
+
 interface FloorClearOverlayProps {
   floor: number;
   isVictory: boolean;
@@ -16,7 +19,7 @@ function FloorClearOverlay({ floor, isVictory, onComplete }: FloorClearOverlayPr
     <div className="floor-clear-overlay">
       <div className="floor-clear-container">
         {/* Sparkle particles */}
-        {[...Array(16)].map((_, i) => (
+        {SPARKLE_INDICES.map((i) => (
           <div
             key={i}
             className="sparkle-particle"
