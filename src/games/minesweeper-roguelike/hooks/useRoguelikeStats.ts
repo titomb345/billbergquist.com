@@ -1,40 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PowerUpId, RoguelikeStats } from '../types';
 import { UNLOCK_FLOOR_5_REWARD } from '../constants';
-
-const STORAGE_KEY = 'minesweeper-roguelike-stats';
-
-const DEFAULT_STATS: RoguelikeStats = {
-  totalRuns: 0,
-  bestFloor: 0,
-  bestScore: 0,
-  floorsCleared: 0,
-  unlocks: [],
-};
-
-function loadStats(): RoguelikeStats {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      return {
-        ...DEFAULT_STATS,
-        ...parsed,
-      };
-    }
-  } catch {
-    // Ignore errors, use defaults
-  }
-  return DEFAULT_STATS;
-}
-
-function saveStats(stats: RoguelikeStats): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
-  } catch {
-    // Ignore storage errors
-  }
-}
+import { saveStats, loadStats } from '../persistence';
 
 export function useRoguelikeStats() {
   const [stats, setStats] = useState<RoguelikeStats>(loadStats);
@@ -67,8 +34,15 @@ export function useRoguelikeStats() {
   }, []);
 
   const resetStats = useCallback(() => {
-    setStats(DEFAULT_STATS);
-    saveStats(DEFAULT_STATS);
+    const defaultStats: RoguelikeStats = {
+      totalRuns: 0,
+      bestFloor: 0,
+      bestScore: 0,
+      floorsCleared: 0,
+      unlocks: [],
+    };
+    setStats(defaultStats);
+    saveStats(defaultStats);
   }, []);
 
   return {

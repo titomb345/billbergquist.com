@@ -1,5 +1,14 @@
 import { useReducer, useEffect, useCallback } from 'react';
-import { RoguelikeGameState, RoguelikeAction, PowerUp, PowerUpId, GamePhase, RunState, Cell, CellState } from '../types';
+import {
+  RoguelikeGameState,
+  RoguelikeAction,
+  PowerUp,
+  PowerUpId,
+  GamePhase,
+  RunState,
+  Cell,
+  CellState,
+} from '../types';
 import {
   createEmptyBoard,
   placeMines,
@@ -24,76 +33,7 @@ import {
   countFlags,
 } from '../logic/roguelikeLogic';
 import { getFloorConfig, selectDraftOptions, getAvailablePowerUps } from '../constants';
-
-const STORAGE_KEY = 'minesweeper-descent-save';
-
-// Serializable version of state (Set -> Array)
-interface SerializedState extends Omit<RoguelikeGameState, 'dangerCells'> {
-  dangerCells: string[];
-}
-
-function serializeState(state: RoguelikeGameState): string {
-  const serializable: SerializedState = {
-    ...state,
-    dangerCells: Array.from(state.dangerCells),
-  };
-  return JSON.stringify(serializable);
-}
-
-function deserializeState(json: string): RoguelikeGameState | null {
-  try {
-    const parsed: SerializedState = JSON.parse(json);
-    // Validate it has required fields
-    if (!parsed.phase || !parsed.board || !parsed.run) {
-      return null;
-    }
-    return {
-      ...parsed,
-      dangerCells: new Set(parsed.dangerCells),
-    };
-  } catch {
-    return null;
-  }
-}
-
-function loadSavedState(): RoguelikeGameState | null {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return null;
-    const state = deserializeState(saved);
-    // Only restore if in an active game phase
-    if (
-      state &&
-      (state.phase === GamePhase.Playing ||
-        state.phase === GamePhase.Draft ||
-        state.phase === GamePhase.FloorClear)
-    ) {
-      return state;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function saveState(state: RoguelikeGameState): void {
-  try {
-    // Only save during active gameplay
-    if (state.phase === GamePhase.Playing || state.phase === GamePhase.Draft) {
-      localStorage.setItem(STORAGE_KEY, serializeState(state));
-    }
-  } catch {
-    // Ignore storage errors
-  }
-}
-
-function clearSavedState(): void {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    // Ignore storage errors
-  }
-}
+import { saveGameState, loadGameState, clearGameState } from '../persistence';
 
 // Helper: Handle floor clear transition and calculate draft options
 function handleFloorClearTransition(
@@ -120,7 +60,12 @@ function applyIronWillProtection(
   mineRow: number,
   mineCol: number,
   chordCenter?: { row: number; col: number }
-): { board: Cell[][]; run: RunState; saved: boolean; savedCell: { row: number; col: number } | null } {
+): {
+  board: Cell[][];
+  run: RunState;
+  saved: boolean;
+  savedCell: { row: number; col: number } | null;
+} {
   if (hasPowerUp(run, 'iron-will') && run.ironWillAvailable) {
     let newBoard: Cell[][];
     if (chordCenter) {
@@ -133,8 +78,10 @@ function applyIronWillProtection(
           const inChordArea =
             Math.abs(c.row - chordCenter.row) <= 1 &&
             Math.abs(c.col - chordCenter.col) <= 1 &&
-            c.row >= 0 && c.row < rows &&
-            c.col >= 0 && c.col < cols;
+            c.row >= 0 &&
+            c.row < rows &&
+            c.col >= 0 &&
+            c.col < cols;
           return c.isMine && c.state === CellState.Revealed && inChordArea
             ? { ...c, state: CellState.Flagged }
             : c;
@@ -158,7 +105,10 @@ function applyIronWillProtection(
   return { board, run, saved: false, savedCell: null };
 }
 
-function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): RoguelikeGameState {
+function roguelikeReducer(
+  state: RoguelikeGameState,
+  action: RoguelikeAction
+): RoguelikeGameState {
   switch (action.type) {
     case 'START_RUN': {
       const newState = createRoguelikeInitialState(action.isMobile, action.unlocks);
@@ -166,6 +116,7 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
     }
 
     case 'GO_TO_START': {
+      clearGameState();
       return {
         ...state,
         phase: GamePhase.Start,
@@ -519,16 +470,12 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
   }
 }
 
-export function useRoguelikeState(isMobile: boolean = false) {
-  const [state, dispatch] = useReducer(roguelikeReducer, isMobile, (mobile) => {
-    // Try to restore saved game
-    const saved = loadSavedState();
-    if (saved) {
-      // Update mobile state if it changed
-      return { ...saved, isMobile: mobile };
-    }
-    return createRoguelikeInitialState(mobile);
-  });
+export function useRoguelikeState(isMobile: boolean = false, unlocks: PowerUpId[] = []) {
+  const [state, dispatch] = useReducer(
+    roguelikeReducer,
+    { isMobile, unlocks },
+    (init) => loadGameState(init.unlocks) ?? createRoguelikeInitialState(init.isMobile, init.unlocks)
+  );
 
   // Handle mobile state changes
   useEffect(() => {
@@ -539,11 +486,19 @@ export function useRoguelikeState(isMobile: boolean = false) {
 
   // Save state to localStorage during active gameplay
   useEffect(() => {
-    if (state.phase === GamePhase.Playing || state.phase === GamePhase.Draft || state.phase === GamePhase.FloorClear) {
-      saveState(state);
-    } else if (state.phase === GamePhase.Start || state.phase === GamePhase.RunOver || state.phase === GamePhase.Victory) {
+    if (
+      state.phase === GamePhase.Playing ||
+      state.phase === GamePhase.Draft ||
+      state.phase === GamePhase.FloorClear
+    ) {
+      saveGameState(state);
+    } else if (
+      state.phase === GamePhase.Start ||
+      state.phase === GamePhase.RunOver ||
+      state.phase === GamePhase.Victory
+    ) {
       // Clear saved state when not in active gameplay
-      clearSavedState();
+      clearGameState();
     }
   }, [state]);
 
@@ -569,9 +524,12 @@ export function useRoguelikeState(isMobile: boolean = false) {
     return () => clearTimeout(timeout);
   }, [state.closeCallCell]);
 
-  const startRun = useCallback((unlocks: PowerUpId[] = []) => {
-    dispatch({ type: 'START_RUN', isMobile, unlocks });
-  }, [isMobile]);
+  const startRun = useCallback(
+    (runUnlocks: PowerUpId[] = []) => {
+      dispatch({ type: 'START_RUN', isMobile, unlocks: runUnlocks });
+    },
+    [isMobile]
+  );
 
   const goToStart = useCallback(() => {
     dispatch({ type: 'GO_TO_START' });
