@@ -10,6 +10,8 @@ interface BoardProps {
   dangerCells?: Set<string>;
   xRayMode?: boolean;
   onXRay?: (row: number, col: number) => void;
+  onCellHover?: (row: number, col: number) => void;
+  onCellHoverEnd?: () => void;
 }
 
 function Board({
@@ -21,6 +23,8 @@ function Board({
   dangerCells,
   xRayMode = false,
   onXRay,
+  onCellHover,
+  onCellHoverEnd,
 }: BoardProps) {
   return (
     <div
@@ -40,6 +44,8 @@ function Board({
               hasDanger={dangerCells?.has(`${cell.row},${cell.col}`)}
               xRayMode={xRayMode}
               onXRay={onXRay}
+              onHover={onCellHover}
+              onHoverEnd={onCellHoverEnd}
             />
           ))}
         </div>

@@ -11,6 +11,8 @@ interface CellProps {
   hasDanger?: boolean; // For Danger Sense power-up
   xRayMode?: boolean; // For X-Ray Vision targeting
   onXRay?: (row: number, col: number) => void;
+  onHover?: (row: number, col: number) => void; // For Mine Detector
+  onHoverEnd?: () => void; // For Mine Detector
 }
 
 function CellComponent({
@@ -22,6 +24,8 @@ function CellComponent({
   hasDanger = false,
   xRayMode = false,
   onXRay,
+  onHover,
+  onHoverEnd,
 }: CellProps) {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -96,12 +100,26 @@ function CellComponent({
     return null;
   };
 
+  const handleMouseEnter = () => {
+    if (onHover && cell.state === CellState.Hidden) {
+      onHover(cell.row, cell.col);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (onHoverEnd) {
+      onHoverEnd();
+    }
+  };
+
   return (
     <div
       className={getClassName()}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       onMouseDown={handleMiddleClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {getContent()}
     </div>
@@ -110,6 +128,8 @@ function CellComponent({
 
 // Memoize Cell to prevent re-renders when props haven't changed
 // On a 12x12 board, this prevents 144 unnecessary re-renders per state change
+// Note: Callback props (onReveal, onFlag, onChord, onXRay, onHover, onHoverEnd)
+// are assumed stable via useCallback in parent - not compared here for performance
 const Cell = memo(CellComponent, (prev, next) => {
   return (
     prev.cell.state === next.cell.state &&

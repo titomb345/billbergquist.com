@@ -1,5 +1,5 @@
 import { useReducer, useEffect, useCallback } from 'react';
-import { RoguelikeGameState, RoguelikeAction, PowerUp, GamePhase, RunState, Cell, CellState } from '../types';
+import { RoguelikeGameState, RoguelikeAction, PowerUp, PowerUpId, GamePhase, RunState, Cell, CellState } from '../types';
 import {
   createEmptyBoard,
   placeMines,
@@ -62,7 +62,12 @@ function loadSavedState(): RoguelikeGameState | null {
     if (!saved) return null;
     const state = deserializeState(saved);
     // Only restore if in an active game phase
-    if (state && (state.phase === GamePhase.Playing || state.phase === GamePhase.Draft)) {
+    if (
+      state &&
+      (state.phase === GamePhase.Playing ||
+        state.phase === GamePhase.Draft ||
+        state.phase === GamePhase.FloorClear)
+    ) {
       return state;
     }
     return null;
@@ -93,13 +98,14 @@ function clearSavedState(): void {
 // Helper: Handle floor clear transition and calculate draft options
 function handleFloorClearTransition(
   run: RunState,
-  time: number
+  time: number,
+  unlocks: PowerUpId[]
 ): { phase: GamePhase; score: number; draftOptions: PowerUp[] } {
   const score = run.score + calculateFloorClearBonus(run.currentFloor, time);
   const draftOptions = isFinalFloor(run.currentFloor)
     ? []
     : selectDraftOptions(
-        getAvailablePowerUps([]),
+        getAvailablePowerUps(unlocks),
         run.activePowerUps.map((p) => p.id),
         3
       );
@@ -113,14 +119,26 @@ function applyIronWillProtection(
   run: RunState,
   mineRow: number,
   mineCol: number,
-  isChordHit: boolean = false
-): { board: Cell[][]; run: RunState; saved: boolean } {
+  chordCenter?: { row: number; col: number }
+): { board: Cell[][]; run: RunState; saved: boolean; savedCell: { row: number; col: number } | null } {
   if (hasPowerUp(run, 'iron-will') && run.ironWillAvailable) {
     let newBoard: Cell[][];
-    if (isChordHit) {
-      // For chord hits, flag all revealed mines
+    if (chordCenter) {
+      // For chord hits, flag only revealed mines in the chord area (3x3 around chord center)
+      const rows = board.length;
+      const cols = board[0].length;
       newBoard = board.map((r) =>
-        r.map((c) => (c.isMine && c.state === CellState.Revealed ? { ...c, state: CellState.Flagged } : c))
+        r.map((c) => {
+          // Check if this cell is within the chord's 3x3 area
+          const inChordArea =
+            Math.abs(c.row - chordCenter.row) <= 1 &&
+            Math.abs(c.col - chordCenter.col) <= 1 &&
+            c.row >= 0 && c.row < rows &&
+            c.col >= 0 && c.col < cols;
+          return c.isMine && c.state === CellState.Revealed && inChordArea
+            ? { ...c, state: CellState.Flagged }
+            : c;
+        })
       );
     } else {
       // For single cell hits, flag just the hit mine
@@ -134,15 +152,16 @@ function applyIronWillProtection(
       board: newBoard,
       run: { ...run, ironWillAvailable: false },
       saved: true,
+      savedCell: { row: mineRow, col: mineCol },
     };
   }
-  return { board, run, saved: false };
+  return { board, run, saved: false, savedCell: null };
 }
 
 function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): RoguelikeGameState {
   switch (action.type) {
     case 'START_RUN': {
-      const newState = createRoguelikeInitialState(action.isMobile);
+      const newState = createRoguelikeInitialState(action.isMobile, action.unlocks);
       return setupFloor(newState, 1);
     }
 
@@ -217,11 +236,13 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
       }
 
       // Check for mine hit
+      let closeCallCell: { row: number; col: number } | null = null;
       if (newBoard[row][col].isMine) {
         const protection = applyIronWillProtection(newBoard, newRun, row, col);
         if (protection.saved) {
           newBoard = protection.board;
           newRun = protection.run;
+          closeCallCell = protection.savedCell;
         } else {
           // Game over - start explosion animation
           return {
@@ -235,7 +256,7 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
           };
         }
       } else if (checkFloorCleared(newBoard)) {
-        const clearResult = handleFloorClearTransition(newRun, state.time);
+        const clearResult = handleFloorClearTransition(newRun, state.time, state.unlocks);
         newRun.score = clearResult.score;
         newPhase = clearResult.phase;
         newDraftOptions = clearResult.draftOptions;
@@ -255,6 +276,7 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
         draftOptions: newDraftOptions,
         dangerCells: newDangerCells,
         minesRemaining: state.floorConfig.mines - countFlags(newBoard),
+        closeCallCell,
       };
     }
 
@@ -291,24 +313,28 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
       const newRevealed = countRevealedCells(newBoard);
       newRun.score += calculateRevealScore(newRevealed - prevRevealed, newRun.currentFloor);
 
+      let closeCallCell: { row: number; col: number } | null = null;
       if (hitMine) {
-        const protection = applyIronWillProtection(newBoard, newRun, row, col, true);
+        // Find which mine was hit for the animation
+        let hitRow = row,
+          hitCol = col;
+        for (let r = 0; r < newBoard.length; r++) {
+          for (let c = 0; c < newBoard[0].length; c++) {
+            if (newBoard[r][c].isMine && newBoard[r][c].state === CellState.Revealed) {
+              hitRow = r;
+              hitCol = c;
+              break;
+            }
+          }
+          if (hitRow !== row || hitCol !== col) break;
+        }
+
+        const protection = applyIronWillProtection(newBoard, newRun, hitRow, hitCol, { row, col });
         if (protection.saved) {
           finalBoard = protection.board;
           newRun = protection.run;
+          closeCallCell = protection.savedCell;
         } else {
-          // Find which mine was hit for explosion animation
-          let hitRow = row,
-            hitCol = col;
-          for (let r = 0; r < newBoard.length && hitRow === row; r++) {
-            for (let c = 0; c < newBoard[0].length; c++) {
-              if (newBoard[r][c].isMine && newBoard[r][c].state === CellState.Revealed) {
-                hitRow = r;
-                hitCol = c;
-                break;
-              }
-            }
-          }
           return {
             ...state,
             board: newBoard,
@@ -319,7 +345,7 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
           };
         }
       } else if (checkFloorCleared(newBoard)) {
-        const clearResult = handleFloorClearTransition(newRun, state.time);
+        const clearResult = handleFloorClearTransition(newRun, state.time, state.unlocks);
         newRun.score = clearResult.score;
         newPhase = clearResult.phase;
         newDraftOptions = clearResult.draftOptions;
@@ -339,6 +365,7 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
         draftOptions: newDraftOptions,
         dangerCells: newDangerCells,
         minesRemaining: state.floorConfig.mines - countFlags(finalBoard),
+        closeCallCell,
       };
     }
 
@@ -365,7 +392,7 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
       let newDraftOptions: PowerUp[] = [];
 
       if (checkFloorCleared(newBoard)) {
-        const clearResult = handleFloorClearTransition(newRun, state.time);
+        const clearResult = handleFloorClearTransition(newRun, state.time, state.unlocks);
         newRun.score = clearResult.score;
         newPhase = clearResult.phase;
         newDraftOptions = clearResult.draftOptions;
@@ -480,6 +507,13 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
       };
     }
 
+    case 'CLOSE_CALL_COMPLETE': {
+      return {
+        ...state,
+        closeCallCell: null,
+      };
+    }
+
     default:
       return state;
   }
@@ -524,8 +558,19 @@ export function useRoguelikeState(isMobile: boolean = false) {
     return () => clearInterval(interval);
   }, [state.phase]);
 
-  const startRun = useCallback(() => {
-    dispatch({ type: 'START_RUN', isMobile });
+  // Close call effect - auto-clear after animation
+  useEffect(() => {
+    if (!state.closeCallCell) return;
+
+    const timeout = setTimeout(() => {
+      dispatch({ type: 'CLOSE_CALL_COMPLETE' });
+    }, 1200);
+
+    return () => clearTimeout(timeout);
+  }, [state.closeCallCell]);
+
+  const startRun = useCallback((unlocks: PowerUpId[] = []) => {
+    dispatch({ type: 'START_RUN', isMobile, unlocks });
   }, [isMobile]);
 
   const goToStart = useCallback(() => {

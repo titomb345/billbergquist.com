@@ -1,6 +1,16 @@
-import { Cell, CellState, GamePhase, RoguelikeGameState, RunState } from '../types';
+import { Cell, CellState, GamePhase, PowerUpId, RoguelikeGameState, RunState } from '../types';
 import { getFloorConfig, SCORING, MAX_FLOOR } from '../constants';
 import { createEmptyBoard, revealCell, revealCascade } from './gameLogic';
+
+// Generate a short run seed for sharing/comparing runs
+function generateRunSeed(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Exclude confusing chars like 0/O, 1/I
+  let seed = '';
+  for (let i = 0; i < 6; i++) {
+    seed += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return seed;
+}
 
 // Create initial run state
 export function createInitialRunState(): RunState {
@@ -11,11 +21,12 @@ export function createInitialRunState(): RunState {
     ironWillAvailable: true,
     xRayUsedThisFloor: false,
     luckyStartUsedThisFloor: false,
+    seed: generateRunSeed(),
   };
 }
 
 // Create initial roguelike game state for a new run
-export function createRoguelikeInitialState(isMobile: boolean): RoguelikeGameState {
+export function createRoguelikeInitialState(isMobile: boolean, unlocks: PowerUpId[] = []): RoguelikeGameState {
   const floorConfig = getFloorConfig(1, isMobile);
   return {
     phase: GamePhase.Start,
@@ -29,6 +40,8 @@ export function createRoguelikeInitialState(isMobile: boolean): RoguelikeGameSta
     draftOptions: [],
     dangerCells: new Set(),
     explodedCell: null,
+    closeCallCell: null,
+    unlocks,
   };
 }
 
@@ -47,6 +60,7 @@ export function setupFloor(state: RoguelikeGameState, floor: number): RoguelikeG
     isFirstClick: true,
     dangerCells: new Set(),
     explodedCell: null,
+    closeCallCell: null,
     run: {
       ...state.run,
       currentFloor: floor,
@@ -57,7 +71,7 @@ export function setupFloor(state: RoguelikeGameState, floor: number): RoguelikeG
 }
 
 // Check if player has a specific power-up
-export function hasPowerUp(run: RunState, powerUpId: string): boolean {
+export function hasPowerUp(run: RunState, powerUpId: PowerUpId): boolean {
   return run.activePowerUps.some((p) => p.id === powerUpId);
 }
 
@@ -181,9 +195,12 @@ export function applySixthSense(board: Cell[][], clickRow: number, clickCol: num
 
 // Apply X-Ray Vision: safely reveal 3x3 area
 export function applyXRayVision(board: Cell[][], centerRow: number, centerCol: number): Cell[][] {
-  const newBoard = board.map((r) => r.map((c) => ({ ...c })));
+  let newBoard = board.map((r) => r.map((c) => ({ ...c })));
   const rows = newBoard.length;
   const cols = newBoard[0].length;
+
+  // Collect cells that need cascading (0-cells)
+  const cellsToCascade: Array<{ row: number; col: number }> = [];
 
   for (let dr = -1; dr <= 1; dr++) {
     for (let dc = -1; dc <= 1; dc++) {
@@ -197,14 +214,19 @@ export function applyXRayVision(board: Cell[][], centerRow: number, centerCol: n
             cell.state = CellState.Flagged;
           } else {
             cell.state = CellState.Revealed;
-            // Cascade if it's a 0
+            // Queue 0-cells for cascading after we process all cells
             if (cell.adjacentMines === 0) {
-              return revealCascade(newBoard, r, c);
+              cellsToCascade.push({ row: r, col: c });
             }
           }
         }
       }
     }
+  }
+
+  // Now cascade from all 0-cells found in the 3x3 area
+  for (const { row, col } of cellsToCascade) {
+    newBoard = revealCascade(newBoard, row, col);
   }
 
   return newBoard;
@@ -256,6 +278,29 @@ export function checkFloorCleared(board: Cell[][]): boolean {
 // Check if this is the final floor
 export function isFinalFloor(floor: number): boolean {
   return floor >= MAX_FLOOR;
+}
+
+// Calculate mine count in 5×5 area for Mine Detector power-up
+export function calculateMineCount5x5(
+  board: Cell[][],
+  centerRow: number,
+  centerCol: number
+): number {
+  const rows = board.length;
+  const cols = board[0]?.length || 0;
+  let count = 0;
+
+  for (let dr = -2; dr <= 2; dr++) {
+    for (let dc = -2; dc <= 2; dc++) {
+      const r = centerRow + dr;
+      const c = centerCol + dc;
+      if (r >= 0 && r < rows && c >= 0 && c < cols && board[r][c].isMine) {
+        count++;
+      }
+    }
+  }
+
+  return count;
 }
 
 // Re-export countFlags from gameLogic to avoid duplication

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { RoguelikeStats } from '../types';
+import { PowerUpId, RoguelikeStats } from '../types';
 import { UNLOCK_FLOOR_5_REWARD } from '../constants';
 
 const STORAGE_KEY = 'minesweeper-roguelike-stats';
@@ -46,7 +46,7 @@ export function useRoguelikeStats() {
 
   const recordRun = useCallback((floorReached: number, score: number) => {
     setStats((prev) => {
-      const newUnlocks = [...prev.unlocks];
+      const newUnlocks: PowerUpId[] = [...prev.unlocks];
 
       // Check for floor 5 unlock
       if (floorReached >= 5 && !newUnlocks.includes(UNLOCK_FLOOR_5_REWARD)) {

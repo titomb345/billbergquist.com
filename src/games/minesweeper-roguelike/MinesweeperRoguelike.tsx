@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { useRoguelikeState } from './hooks/useRoguelikeState';
 import { useContainerWidth } from './hooks/useContainerWidth';
 import { useRoguelikeStats } from './hooks/useRoguelikeStats';
@@ -9,7 +9,8 @@ import PowerUpDraft from './components/PowerUpDraft';
 import RunOverScreen from './components/RunOverScreen';
 import ExplosionOverlay from './components/ExplosionOverlay';
 import FloorClearOverlay from './components/FloorClearOverlay';
-import { isFinalFloor } from './logic/roguelikeLogic';
+import CloseCallOverlay from './components/CloseCallOverlay';
+import { isFinalFloor, calculateMineCount5x5 } from './logic/roguelikeLogic';
 import { GamePhase } from './types';
 import './styles.css';
 
@@ -32,10 +33,26 @@ function Minesweeper() {
   } = useRoguelikeState(isConstrained);
 
   const [xRayMode, setXRayMode] = useState(false);
+  const [hoveredCell, setHoveredCell] = useState<{ row: number; col: number } | null>(null);
 
   const handleStartRun = () => {
-    startRun();
+    startRun(stats.unlocks);
   };
+
+  // Mine Detector: calculate 5×5 mine count when hovering
+  const hasMineDetector = state.run.activePowerUps.some((p) => p.id === 'mine-detector');
+  const mineDetectorCount =
+    hasMineDetector && hoveredCell && !state.isFirstClick
+      ? calculateMineCount5x5(state.board, hoveredCell.row, hoveredCell.col)
+      : null;
+
+  const handleCellHover = useCallback((row: number, col: number) => {
+    setHoveredCell({ row, col });
+  }, []);
+
+  const handleCellHoverEnd = useCallback(() => {
+    setHoveredCell(null);
+  }, []);
 
   const handleXRayClick = (row: number, col: number) => {
     useXRay(row, col);
@@ -53,7 +70,7 @@ function Minesweeper() {
   // Record run on game over/victory
   const handleRunEnd = () => {
     recordRun(state.run.currentFloor, state.run.score);
-    startRun();
+    startRun(stats.unlocks);
   };
 
   const isGameOver = state.phase === GamePhase.RunOver || state.phase === GamePhase.Victory;
@@ -78,6 +95,13 @@ function Minesweeper() {
             onToggleXRay={handleToggleXRayMode}
           />
           {xRayMode && <div className="xray-hint">Click a cell to reveal 3×3 area</div>}
+          {mineDetectorCount !== null && (
+            <div className="mine-detector-display">
+              <span className="mine-detector-icon">📡</span>
+              <span className="mine-detector-count">{mineDetectorCount}</span>
+              <span className="mine-detector-label">mines nearby</span>
+            </div>
+          )}
           <div className="minesweeper">
             <Board
               board={state.board}
@@ -88,6 +112,8 @@ function Minesweeper() {
               dangerCells={state.dangerCells}
               xRayMode={xRayMode && canUseXRay}
               onXRay={handleXRayClick}
+              onCellHover={hasMineDetector ? handleCellHover : undefined}
+              onCellHoverEnd={hasMineDetector ? handleCellHoverEnd : undefined}
             />
           </div>
         </>
@@ -103,6 +129,9 @@ function Minesweeper() {
           onContinue={() => skipDraft(500)}
         />
       )}
+
+      {/* Close Call Animation (Iron Will saved) */}
+      {state.closeCallCell && <CloseCallOverlay />}
 
       {/* Explosion Animation */}
       {state.phase === GamePhase.Exploding && <ExplosionOverlay onComplete={explosionComplete} />}
@@ -125,6 +154,7 @@ function Minesweeper() {
           time={state.time}
           powerUps={state.run.activePowerUps}
           stats={stats}
+          seed={state.run.seed}
           onTryAgain={handleRunEnd}
         />
       )}

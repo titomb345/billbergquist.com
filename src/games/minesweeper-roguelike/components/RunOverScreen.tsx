@@ -8,6 +8,7 @@ interface RunOverScreenProps {
   time: number;
   powerUps: PowerUp[];
   stats: RoguelikeStats;
+  seed: string;
   onTryAgain: () => void;
 }
 
@@ -18,6 +19,7 @@ function RunOverScreen({
   time,
   powerUps,
   stats,
+  seed,
   onTryAgain,
 }: RunOverScreenProps) {
   const isNewBestFloor = floor > stats.bestFloor;
@@ -75,6 +77,11 @@ function RunOverScreen({
             </span>
           </div>
         )}
+      </div>
+
+      <div className="run-seed">
+        <span className="run-seed-label">Run Seed</span>
+        <span className="run-seed-value">#{seed}</span>
       </div>
 
       {justUnlocked && (

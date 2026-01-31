@@ -103,6 +103,7 @@ export interface RunState {
   ironWillAvailable: boolean;
   xRayUsedThisFloor: boolean;
   luckyStartUsedThisFloor: boolean;
+  seed: string; // Run seed for sharing/comparing runs
 }
 
 // Meta-progression stats persisted to localStorage
@@ -111,7 +112,7 @@ export interface RoguelikeStats {
   bestFloor: number;
   bestScore: number;
   floorsCleared: number;
-  unlocks: string[];
+  unlocks: PowerUpId[];
 }
 
 // Full roguelike game state
@@ -127,11 +128,13 @@ export interface RoguelikeGameState {
   draftOptions: PowerUp[];
   dangerCells: Set<string>; // Cell keys "row,col" that have danger glow
   explodedCell: { row: number; col: number } | null; // Cell that triggered explosion
+  closeCallCell: { row: number; col: number } | null; // Cell where Iron Will saved player
+  unlocks: PowerUpId[]; // Unlocked power-ups available in draft pool
 }
 
 // Roguelike-specific actions
 export type RoguelikeAction =
-  | { type: 'START_RUN'; isMobile: boolean }
+  | { type: 'START_RUN'; isMobile: boolean; unlocks: PowerUpId[] }
   | { type: 'GO_TO_START' }
   | { type: 'REVEAL_CELL'; row: number; col: number }
   | { type: 'TOGGLE_FLAG'; row: number; col: number }
@@ -142,4 +145,5 @@ export type RoguelikeAction =
   | { type: 'TICK' }
   | { type: 'SET_MOBILE'; isMobile: boolean }
   | { type: 'EXPLOSION_COMPLETE' }
-  | { type: 'FLOOR_CLEAR_COMPLETE' };
+  | { type: 'FLOOR_CLEAR_COMPLETE' }
+  | { type: 'CLOSE_CALL_COMPLETE' };

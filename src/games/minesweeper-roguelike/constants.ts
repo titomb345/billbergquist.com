@@ -1,4 +1,4 @@
-import { FloorConfig, PowerUp } from './types';
+import { FloorConfig, PowerUp, PowerUpId } from './types';
 
 // Floor configurations - escalate from floor 1 (6x6, 4 mines) to floor 10 (12x12, 40 mines)
 export const FLOOR_CONFIGS: FloorConfig[] = [
@@ -93,7 +93,7 @@ export const SCORING = {
 };
 
 // Get available power-ups based on unlocks
-export function getAvailablePowerUps(unlocks: string[]): PowerUp[] {
+export function getAvailablePowerUps(unlocks: PowerUpId[]): PowerUp[] {
   const pool = [...POWER_UP_POOL];
   if (unlocks.includes('mine-detector')) {
     pool.push(MINE_DETECTOR_POWER_UP);
@@ -104,7 +104,7 @@ export function getAvailablePowerUps(unlocks: string[]): PowerUp[] {
 // Select N random power-ups for draft (excluding already owned)
 export function selectDraftOptions(
   availablePool: PowerUp[],
-  ownedIds: string[],
+  ownedIds: PowerUpId[],
   count: number = 3
 ): PowerUp[] {
   const filteredPool = availablePool.filter((p) => !ownedIds.includes(p.id));
@@ -120,4 +120,4 @@ export function selectDraftOptions(
 }
 
 export const MAX_FLOOR = 10;
-export const UNLOCK_FLOOR_5_REWARD = 'mine-detector';
+export const UNLOCK_FLOOR_5_REWARD: PowerUpId = 'mine-detector';
