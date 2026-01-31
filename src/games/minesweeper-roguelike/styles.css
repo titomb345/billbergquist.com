@@ -1452,3 +1452,228 @@
     opacity: 0;
   }
 }
+
+/* ==================== FLOOR CLEAR ANIMATION ==================== */
+
+.floor-clear-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  gap: 8px;
+}
+
+.floor-clear-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Sparkle particles */
+.sparkle-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--neon-cyan);
+  border-radius: 50%;
+  box-shadow:
+    0 0 6px var(--neon-cyan),
+    0 0 12px var(--neon-2);
+  animation: sparkleFly 1s ease-out forwards;
+  animation-delay: var(--delay);
+}
+
+.sparkle-particle:nth-child(odd) {
+  background: var(--neon-2);
+  width: 8px;
+  height: 8px;
+}
+
+.sparkle-particle:nth-child(3n) {
+  background: #ffff00;
+  width: 5px;
+  height: 5px;
+}
+
+@keyframes sparkleFly {
+  0% {
+    transform: rotate(var(--angle)) translateX(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(var(--angle)) translateX(var(--distance)) scale(0);
+    opacity: 0;
+  }
+}
+
+/* Clear rings */
+.clear-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid;
+  opacity: 0;
+  animation: clearRingExpand 1s ease-out forwards;
+}
+
+.clear-ring.ring-1 {
+  width: 30px;
+  height: 30px;
+  border-color: var(--neon-cyan);
+  animation-delay: 0s;
+}
+
+.clear-ring.ring-2 {
+  width: 30px;
+  height: 30px;
+  border-color: var(--neon-2);
+  animation-delay: 0.15s;
+}
+
+@keyframes clearRingExpand {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(8);
+    opacity: 0;
+  }
+}
+
+/* Central glow */
+.clear-glow {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, rgba(0, 255, 136, 0.8) 0%, rgba(0, 245, 255, 0.4) 40%, transparent 70%);
+  border-radius: 50%;
+  animation: clearGlowPulse 0.6s ease-out forwards;
+  box-shadow:
+    0 0 40px var(--neon-2),
+    0 0 80px var(--neon-cyan);
+}
+
+@keyframes clearGlowPulse {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Clear text */
+.floor-clear-text {
+  position: absolute;
+  font-family: var(--font-heading);
+  font-size: 3.5rem;
+  font-weight: bold;
+  color: var(--neon-2);
+  text-shadow:
+    0 0 10px var(--neon-2),
+    0 0 20px var(--neon-cyan),
+    0 0 40px var(--neon-2),
+    0 0 80px var(--neon-cyan-glow);
+  animation: clearText 1.8s ease-out forwards;
+  letter-spacing: 0.15em;
+}
+
+.floor-clear-text.victory {
+  font-size: 4rem;
+  color: #ffdd00;
+  text-shadow:
+    0 0 10px #ffdd00,
+    0 0 20px #ff8800,
+    0 0 40px #ffdd00,
+    0 0 80px #ff8800;
+}
+
+@keyframes clearText {
+  0% {
+    transform: scale(0) rotate(-10deg);
+    opacity: 0;
+  }
+  25% {
+    transform: scale(1.3) rotate(5deg);
+    opacity: 1;
+  }
+  40% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.1) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+/* Floor subtext */
+.floor-clear-subtext {
+  position: absolute;
+  top: calc(50% + 50px);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px var(--neon-cyan);
+  animation: subtextFade 1.8s ease-out forwards;
+  letter-spacing: 0.1em;
+}
+
+@keyframes subtextFade {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Clear scanlines */
+.clear-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 136, 0.03) 2px,
+    rgba(0, 255, 136, 0.03) 4px
+  );
+  pointer-events: none;
+  animation: clearScanlines 0.15s infinite;
+}
+
+@keyframes clearScanlines {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}

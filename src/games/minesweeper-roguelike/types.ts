@@ -81,7 +81,7 @@ export interface FloorConfig {
 }
 
 // Game phases for roguelike mode
-export type GamePhase = 'start' | 'playing' | 'draft' | 'exploding' | 'run-over' | 'victory';
+export type GamePhase = 'start' | 'playing' | 'floor-clear' | 'draft' | 'exploding' | 'run-over' | 'victory';
 
 // Run state tracks current roguelike run
 export interface RunState {
@@ -129,4 +129,5 @@ export type RoguelikeAction =
   | { type: 'SKIP_DRAFT'; bonusPoints: number }
   | { type: 'TICK' }
   | { type: 'SET_MOBILE'; isMobile: boolean }
-  | { type: 'EXPLOSION_COMPLETE' };
+  | { type: 'EXPLOSION_COMPLETE' }
+  | { type: 'FLOOR_CLEAR_COMPLETE' };

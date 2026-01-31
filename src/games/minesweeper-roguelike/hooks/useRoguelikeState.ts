@@ -190,17 +190,13 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
           };
         }
       } else if (checkFloorCleared(newBoard)) {
-        // Floor cleared!
+        // Floor cleared! Show celebration animation
         newRun.score += calculateFloorClearBonus(newRun.currentFloor, state.time);
+        newPhase = 'floor-clear';
 
-        if (isFinalFloor(newRun.currentFloor)) {
-          // Victory!
-          newPhase = 'victory';
-        } else {
-          // Move to draft phase
-          newPhase = 'draft';
+        // Pre-calculate draft options for after the animation
+        if (!isFinalFloor(newRun.currentFloor)) {
           const ownedIds = newRun.activePowerUps.map((p) => p.id);
-          // For now, use empty unlocks - will be connected to stats later
           const availablePool = getAvailablePowerUps([]);
           newDraftOptions = selectDraftOptions(availablePool, ownedIds, 3);
         }
@@ -291,13 +287,12 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
           };
         }
       } else if (checkFloorCleared(newBoard)) {
-        // Floor cleared!
+        // Floor cleared! Show celebration animation
         newRun.score += calculateFloorClearBonus(newRun.currentFloor, state.time);
+        newPhase = 'floor-clear';
 
-        if (isFinalFloor(newRun.currentFloor)) {
-          newPhase = 'victory';
-        } else {
-          newPhase = 'draft';
+        // Pre-calculate draft options for after the animation
+        if (!isFinalFloor(newRun.currentFloor)) {
           const ownedIds = newRun.activePowerUps.map((p) => p.id);
           const availablePool = getAvailablePowerUps([]);
           newDraftOptions = selectDraftOptions(availablePool, ownedIds, 3);
@@ -344,12 +339,12 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
       let newDraftOptions: PowerUp[] = [];
 
       if (checkFloorCleared(newBoard)) {
+        // Floor cleared! Show celebration animation
         newRun.score += calculateFloorClearBonus(newRun.currentFloor, state.time);
+        newPhase = 'floor-clear';
 
-        if (isFinalFloor(newRun.currentFloor)) {
-          newPhase = 'victory';
-        } else {
-          newPhase = 'draft';
+        // Pre-calculate draft options for after the animation
+        if (!isFinalFloor(newRun.currentFloor)) {
           const ownedIds = newRun.activePowerUps.map((p) => p.id);
           const availablePool = getAvailablePowerUps([]);
           newDraftOptions = selectDraftOptions(availablePool, ownedIds, 3);
@@ -447,6 +442,24 @@ function roguelikeReducer(state: RoguelikeGameState, action: RoguelikeAction): R
       };
     }
 
+    case 'FLOOR_CLEAR_COMPLETE': {
+      if (state.phase !== 'floor-clear') return state;
+
+      // Check if this was the final floor
+      if (isFinalFloor(state.run.currentFloor)) {
+        return {
+          ...state,
+          phase: 'victory',
+        };
+      }
+
+      // Move to draft phase
+      return {
+        ...state,
+        phase: 'draft',
+      };
+    }
+
     default:
       return state;
   }
@@ -472,7 +485,7 @@ export function useRoguelikeState(isMobile: boolean = false) {
 
   // Save state to localStorage during active gameplay
   useEffect(() => {
-    if (state.phase === 'playing' || state.phase === 'draft') {
+    if (state.phase === 'playing' || state.phase === 'draft' || state.phase === 'floor-clear') {
       saveState(state);
     } else if (state.phase === 'start' || state.phase === 'run-over' || state.phase === 'victory') {
       // Clear saved state when not in active gameplay
@@ -527,6 +540,10 @@ export function useRoguelikeState(isMobile: boolean = false) {
     dispatch({ type: 'EXPLOSION_COMPLETE' });
   }, []);
 
+  const floorClearComplete = useCallback(() => {
+    dispatch({ type: 'FLOOR_CLEAR_COMPLETE' });
+  }, []);
+
   return {
     state,
     startRun,
@@ -538,5 +555,6 @@ export function useRoguelikeState(isMobile: boolean = false) {
     selectPowerUp,
     skipDraft,
     explosionComplete,
+    floorClearComplete,
   };
 }

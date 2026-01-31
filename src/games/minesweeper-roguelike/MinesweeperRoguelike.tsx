@@ -8,6 +8,8 @@ import StartScreen from './components/StartScreen';
 import PowerUpDraft from './components/PowerUpDraft';
 import RunOverScreen from './components/RunOverScreen';
 import ExplosionOverlay from './components/ExplosionOverlay';
+import FloorClearOverlay from './components/FloorClearOverlay';
+import { isFinalFloor } from './logic/roguelikeLogic';
 import './styles.css';
 
 function Minesweeper() {
@@ -25,6 +27,7 @@ function Minesweeper() {
     selectPowerUp,
     skipDraft,
     explosionComplete,
+    floorClearComplete,
   } = useRoguelikeState(isConstrained);
 
   const [xRayMode, setXRayMode] = useState(false);
@@ -102,6 +105,15 @@ function Minesweeper() {
 
       {/* Explosion Animation */}
       {state.phase === 'exploding' && <ExplosionOverlay onComplete={explosionComplete} />}
+
+      {/* Floor Clear Animation */}
+      {state.phase === 'floor-clear' && (
+        <FloorClearOverlay
+          floor={state.run.currentFloor}
+          isVictory={isFinalFloor(state.run.currentFloor)}
+          onComplete={floorClearComplete}
+        />
+      )}
 
       {/* Run Over / Victory */}
       {isGameOver && (
