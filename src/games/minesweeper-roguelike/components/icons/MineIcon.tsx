@@ -4,11 +4,7 @@ interface MineIconProps {
 
 function MineIcon({ className }: MineIconProps) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className={className}
-    >
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
       <defs>
         <filter id="mineGlow" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
@@ -36,13 +32,7 @@ function MineIcon({ className }: MineIconProps) {
       </g>
 
       {/* Main body */}
-      <circle
-        cx="12"
-        cy="12"
-        r="6"
-        fill="url(#mineGradient)"
-        filter="url(#mineGlow)"
-      />
+      <circle cx="12" cy="12" r="6" fill="url(#mineGradient)" filter="url(#mineGlow)" />
 
       {/* Highlight */}
       <circle cx="10" cy="10" r="2" fill="rgba(255, 255, 255, 0.6)" />

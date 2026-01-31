@@ -4,11 +4,7 @@ interface FlagIconProps {
 
 function FlagIcon({ className }: FlagIconProps) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className={className}
-    >
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
       <defs>
         <filter id="flagGlow" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="1" result="coloredBlur" />
@@ -36,11 +32,7 @@ function FlagIcon({ className }: FlagIconProps) {
       />
 
       {/* Flag */}
-      <path
-        d="M8 4L18 8L8 12Z"
-        fill="url(#flagGradient)"
-        filter="url(#flagGlow)"
-      />
+      <path d="M8 4L18 8L8 12Z" fill="url(#flagGradient)" filter="url(#flagGlow)" />
 
       {/* Base */}
       <path

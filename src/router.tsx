@@ -3,7 +3,7 @@ import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import ArcadePage from './pages/ArcadePage';
-import { MinesweeperPage } from './games/minesweeper';
+import { MinesweeperRoguelikePage } from './games/minesweeper-roguelike';
 
 export const router = createBrowserRouter([
   {
@@ -23,8 +23,8 @@ export const router = createBrowserRouter([
         element: <ArcadePage />,
       },
       {
-        path: 'arcade/minesweeper',
-        element: <MinesweeperPage />,
+        path: 'arcade/descent',
+        element: <MinesweeperRoguelikePage />,
       },
     ],
   },
