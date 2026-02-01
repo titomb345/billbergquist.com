@@ -144,6 +144,15 @@
 }
 
 /* Local keyframes to ensure they work with CSS modules */
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
 @keyframes heroFadeIn {
   from {
     opacity: 0;
