@@ -356,6 +356,17 @@
   }
 }
 
+/* Local keyframes for CSS modules */
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .marquee::before,
