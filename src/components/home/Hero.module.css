@@ -120,11 +120,6 @@
   border-radius: var(--radius-sm);
 }
 
-.cursor {
-  color: var(--neon-orange);
-  animation: blink 1s step-end infinite;
-  font-weight: 700;
-}
 
 .tagline {
   font-family: var(--font-body);
@@ -144,15 +139,6 @@
 }
 
 /* Local keyframes to ensure they work with CSS modules */
-@keyframes blink {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-}
-
 @keyframes heroFadeIn {
   from {
     opacity: 0;

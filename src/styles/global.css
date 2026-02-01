@@ -90,6 +90,13 @@ body {
   z-index: 2;
 }
 
+/* Blinking cursor effect */
+.blinking-cursor {
+  color: var(--neon-orange);
+  font-weight: 700;
+  animation: blink 1s ease-in-out infinite;
+}
+
 /* Mobile performance: reduce glow effects */
 @media (max-width: 640px) {
   .neon-text-mint,

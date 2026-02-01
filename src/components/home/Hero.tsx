@@ -27,7 +27,7 @@ function Hero({ onEnterArcade }: HeroProps) {
         </h1>
         <div className={styles.role}>
           <span className={styles.roleText}>Staff Software Engineer</span>
-          <span className={styles.cursor}>_</span>
+          <span className="blinking-cursor">_</span>
         </div>
         <p className={styles.tagline}>
           Building elegant solutions with modern web technologies
