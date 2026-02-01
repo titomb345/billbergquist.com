@@ -9,8 +9,19 @@ interface CellProps {
   onChord: (row: number, col: number) => void;
   gameOver: boolean;
   hasDanger?: boolean; // For Danger Sense power-up
+  hasPatternMemory?: boolean; // For Pattern Memory power-up (safe diagonal glow)
+  heatMapEnabled?: boolean; // For Heat Map power-up
   xRayMode?: boolean; // For X-Ray Vision targeting
+  peekMode?: boolean; // For Peek targeting
+  safePathMode?: boolean; // For Safe Path targeting
+  defusalKitMode?: boolean; // For Defusal Kit targeting
+  surveyMode?: boolean; // For Survey targeting
+  peekValue?: number | 'mine' | null; // The peeked value to display
   onXRay?: (row: number, col: number) => void;
+  onPeek?: (row: number, col: number) => void;
+  onSafePath?: (row: number, col: number) => void;
+  onDefusalKit?: (row: number, col: number) => void;
+  onSurvey?: (row: number, col: number) => void;
   onHover?: (row: number, col: number) => void; // For Mine Detector
   onHoverEnd?: () => void; // For Mine Detector
   inDetectorZone?: boolean; // For Mine Detector visual overlay
@@ -26,8 +37,19 @@ function CellComponent({
   onChord,
   gameOver,
   hasDanger = false,
+  hasPatternMemory = false,
+  heatMapEnabled = false,
   xRayMode = false,
+  peekMode = false,
+  safePathMode = false,
+  defusalKitMode = false,
+  surveyMode = false,
+  peekValue = null,
   onXRay,
+  onPeek,
+  onSafePath,
+  onDefusalKit,
+  onSurvey,
   onHover,
   onHoverEnd,
   inDetectorZone = false,
@@ -42,6 +64,30 @@ function CellComponent({
     // X-Ray mode takes precedence
     if (xRayMode && onXRay) {
       onXRay(cell.row, cell.col);
+      return;
+    }
+
+    // Peek mode
+    if (peekMode && onPeek && cell.state === CellState.Hidden) {
+      onPeek(cell.row, cell.col);
+      return;
+    }
+
+    // Safe Path mode - works on hidden cells
+    if (safePathMode && onSafePath && cell.state === CellState.Hidden) {
+      onSafePath(cell.row, cell.col);
+      return;
+    }
+
+    // Defusal Kit mode - works on flagged cells
+    if (defusalKitMode && onDefusalKit && cell.state === CellState.Flagged) {
+      onDefusalKit(cell.row, cell.col);
+      return;
+    }
+
+    // Survey mode - works on hidden cells
+    if (surveyMode && onSurvey && cell.state === CellState.Hidden) {
+      onSurvey(cell.row, cell.col);
       return;
     }
 
@@ -67,8 +113,23 @@ function CellComponent({
       if (hasDanger) {
         classes.push('cell-danger');
       }
+      if (hasPatternMemory) {
+        classes.push('cell-pattern-memory');
+      }
       if (xRayMode) {
         classes.push('cell-xray-target');
+      }
+      if (peekMode) {
+        classes.push('cell-peek-target');
+      }
+      if (safePathMode) {
+        classes.push('cell-safe-path-target');
+      }
+      if (surveyMode) {
+        classes.push('cell-survey-target');
+      }
+      if (peekValue !== null) {
+        classes.push('cell-peeked');
       }
       if (inDetectorZone) {
         classes.push('cell-detector-zone');
@@ -78,6 +139,9 @@ function CellComponent({
       }
     } else if (cell.state === CellState.Flagged) {
       classes.push('cell-flagged');
+      if (defusalKitMode) {
+        classes.push('cell-defusal-target');
+      }
       if (inDetectorZone) {
         classes.push('cell-detector-zone');
       }
@@ -90,6 +154,16 @@ function CellComponent({
         classes.push('cell-mine');
       } else if (cell.adjacentMines > 0) {
         classes.push(`cell-${cell.adjacentMines}`);
+        // Add heat map class if enabled
+        if (heatMapEnabled) {
+          if (cell.adjacentMines <= 2) {
+            classes.push('cell-heat-low');
+          } else if (cell.adjacentMines <= 4) {
+            classes.push('cell-heat-medium');
+          } else {
+            classes.push('cell-heat-high');
+          }
+        }
       }
     }
 
@@ -97,6 +171,17 @@ function CellComponent({
   };
 
   const getContent = () => {
+    // Show peek value if this cell is being peeked
+    if (peekValue !== null && cell.state === CellState.Hidden) {
+      if (peekValue === 'mine') {
+        return <MineIcon />;
+      }
+      if (peekValue > 0) {
+        return <span className={`peek-number cell-${peekValue}`}>{peekValue}</span>;
+      }
+      return <span className="peek-number">0</span>;
+    }
+
     if (cell.state === CellState.Flagged) {
       return <FlagIcon />;
     }
@@ -195,7 +280,14 @@ const Cell = memo(CellComponent, (prev, next) => {
     prev.cell.isMine === next.cell.isMine &&
     prev.gameOver === next.gameOver &&
     prev.hasDanger === next.hasDanger &&
+    prev.hasPatternMemory === next.hasPatternMemory &&
+    prev.heatMapEnabled === next.heatMapEnabled &&
     prev.xRayMode === next.xRayMode &&
+    prev.peekMode === next.peekMode &&
+    prev.safePathMode === next.safePathMode &&
+    prev.defusalKitMode === next.defusalKitMode &&
+    prev.surveyMode === next.surveyMode &&
+    prev.peekValue === next.peekValue &&
     prev.inDetectorZone === next.inDetectorZone &&
     prev.isChordHighlighted === next.isChordHighlighted
   );

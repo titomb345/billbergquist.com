@@ -1,4 +1,4 @@
-import { Cell, CellState, DifficultyConfig } from '../types';
+import { Cell, CellState, DifficultyConfig, FloorConfig } from '../types';
 
 export function createEmptyBoard(config: DifficultyConfig): Cell[][] {
   const board: Cell[][] = [];
@@ -241,4 +241,109 @@ export function countFlags(board: Cell[][]): number {
     }
   }
   return count;
+}
+
+// Options for power-up constrained mine placement
+export interface PlaceMinesOptions {
+  cautiousStart?: boolean; // First click cell must have ≤2 adjacent mines
+  breathingRoom?: boolean; // 2×2 area around first click must be safe
+}
+
+// Place mines with optional power-up constraints
+export function placeMinesWithConstraints(
+  board: Cell[][],
+  config: FloorConfig | DifficultyConfig,
+  excludeRow: number,
+  excludeCol: number,
+  options: PlaceMinesOptions = {}
+): Cell[][] {
+  const rows = config.rows;
+  const cols = config.cols;
+  const mines = config.mines;
+
+  // Build the exclusion set based on options
+  const excludeSet = new Set<string>();
+
+  if (options.breathingRoom) {
+    // Exclude a 2×2 area around the clicked cell (the cell and 3 cells in the best direction)
+    // Actually, let's do a 3×3 area to ensure 2×2 is always safe
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        const r = excludeRow + dr;
+        const c = excludeCol + dc;
+        if (r >= 0 && r < rows && c >= 0 && c < cols) {
+          excludeSet.add(`${r},${c}`);
+        }
+      }
+    }
+  } else {
+    // Default: exclude clicked cell and its neighbors (3×3)
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        const r = excludeRow + dr;
+        const c = excludeCol + dc;
+        if (r >= 0 && r < rows && c >= 0 && c < cols) {
+          excludeSet.add(`${r},${c}`);
+        }
+      }
+    }
+  }
+
+  // Get all valid positions for mines
+  const validPositions: [number, number][] = [];
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      if (!excludeSet.has(`${row},${col}`)) {
+        validPositions.push([row, col]);
+      }
+    }
+  }
+
+  // If Cautious Start is enabled, we need to ensure the clicked cell has ≤2 adjacent mines
+  // Try up to 50 times to find a valid configuration
+  const maxAttempts = options.cautiousStart ? 50 : 1;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const newBoard = board.map((row) => row.map((cell) => ({ ...cell, isMine: false, adjacentMines: 0 })));
+
+    // Shuffle valid positions
+    const shuffled = [...validPositions];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    // Place mines
+    const minePositions = shuffled.slice(0, mines);
+    for (const [row, col] of minePositions) {
+      newBoard[row][col].isMine = true;
+    }
+
+    // Calculate adjacent mines
+    const finalBoard = calculateAdjacentMines(newBoard);
+
+    // Check Cautious Start constraint
+    if (options.cautiousStart) {
+      const clickedCell = finalBoard[excludeRow][excludeCol];
+      if (clickedCell.adjacentMines > 2) {
+        continue; // Try again
+      }
+    }
+
+    return finalBoard;
+  }
+
+  // Fallback: return the last attempt even if it doesn't meet constraints
+  // This should rarely happen with reasonable board/mine configurations
+  const newBoard = board.map((row) => row.map((cell) => ({ ...cell, isMine: false, adjacentMines: 0 })));
+  const shuffled = [...validPositions];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  const minePositions = shuffled.slice(0, mines);
+  for (const [row, col] of minePositions) {
+    newBoard[row][col].isMine = true;
+  }
+  return calculateAdjacentMines(newBoard);
 }

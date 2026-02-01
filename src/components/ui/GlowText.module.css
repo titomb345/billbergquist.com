@@ -63,7 +63,7 @@
     90deg,
     var(--neon-mint),
     var(--neon-magenta),
-    var(--neon-purple)
+    var(--neon-mint)
   );
   -webkit-background-clip: text;
   background-clip: text;

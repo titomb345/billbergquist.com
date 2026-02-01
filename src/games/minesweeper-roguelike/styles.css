@@ -2,8 +2,8 @@
 
 /* CSS Custom Properties */
 :root {
-  --led-font: 28px;
-  --led-width: 54px;
+  --led-font: 18px;
+  --led-width: 44px;
 
   /* Neon number colors */
   --neon-1: #00f5ff; /* Cyan */
@@ -24,15 +24,10 @@
 
 .minesweeper {
   display: inline-block;
-  background: var(--bg-surface);
-  border: 2px solid var(--neon-mint);
-  border-radius: var(--radius-md);
+  background: transparent;
   padding: 8px;
   font-family: var(--font-mono);
   user-select: none;
-  box-shadow:
-    0 0 10px var(--neon-mint-glow),
-    inset 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
 /* Header Section */
@@ -98,7 +93,6 @@
 
 /* Board */
 .minesweeper-board {
-  border: 2px solid rgba(0, 245, 255, 0.3);
   border-radius: var(--radius-sm);
   display: inline-block;
   line-height: 0;
@@ -221,19 +215,19 @@
   font-size: 0.7rem;
   letter-spacing: 1px;
   background: transparent;
-  border: 2px solid var(--neon-purple);
+  border: 2px solid var(--neon-mint);
   border-radius: var(--radius-sm);
-  color: var(--neon-purple);
+  color: var(--neon-mint);
   cursor: pointer;
   transition: var(--transition-fast);
-  box-shadow: 0 0 5px var(--neon-purple-glow);
+  box-shadow: 0 0 5px var(--neon-mint-glow);
 }
 
 .difficulty-button:hover {
-  background: rgba(191, 0, 255, 0.1);
+  background: rgba(0, 245, 255, 0.1);
   box-shadow:
-    0 0 10px var(--neon-purple),
-    0 0 20px var(--neon-purple-glow);
+    0 0 10px var(--neon-mint),
+    0 0 20px var(--neon-mint-glow);
 }
 
 .difficulty-button:active {
@@ -241,11 +235,11 @@
 }
 
 .difficulty-button.active {
-  background: rgba(191, 0, 255, 0.2);
+  background: rgba(0, 245, 255, 0.2);
   box-shadow:
-    0 0 10px var(--neon-purple),
-    0 0 20px var(--neon-purple-glow),
-    inset 0 0 10px var(--neon-purple-glow);
+    0 0 10px var(--neon-mint),
+    0 0 20px var(--neon-mint-glow),
+    inset 0 0 10px var(--neon-mint-glow);
 }
 
 /* Game container */
@@ -285,13 +279,8 @@
   -webkit-touch-callout: none;
 }
 
-/* Responsive breakpoints */
+/* Responsive breakpoints for classic mode */
 @media (max-width: 640px) {
-  :root {
-    --led-font: 22px;
-    --led-width: 44px;
-  }
-
   .minesweeper-container {
     padding: 6px;
   }
@@ -309,11 +298,6 @@
 }
 
 @media (max-width: 480px) {
-  :root {
-    --led-font: 18px;
-    --led-width: 38px;
-  }
-
   .difficulty-selector {
     gap: 4px;
   }
@@ -359,7 +343,7 @@
 
 .roguelike-mode {
   position: relative;
-  height: 500px;
+  height: 540px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -371,113 +355,128 @@
   margin-bottom: auto;
 }
 
-/* Roguelike Header */
+/* Roguelike Header - two row layout */
 .roguelike-header {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   margin-bottom: 12px;
   width: 100%;
-  max-width: 400px;
-}
-
-.roguelike-header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.roguelike-header-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  max-width: 100%;
   background: var(--bg-elevated);
   border: 1px solid rgba(0, 245, 255, 0.3);
   border-radius: var(--radius-sm);
-  padding: 6px 8px;
+  padding: 8px 16px 0;
 }
 
-.floor-indicator,
-.score-display {
+/* Stats Row - horizontal layout with 4 items */
+.roguelike-stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+}
+
+/* Stat item - stacked label above value */
+.roguelike-stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
 }
 
-.floor-label,
-.score-label {
+.stat-label {
   font-family: var(--font-heading);
-  font-size: 0.6rem;
+  font-size: 0.45rem;
   letter-spacing: 1px;
   color: var(--text-muted);
+  text-transform: uppercase;
 }
 
-.floor-number {
+.stat-value {
   font-family: var(--font-mono);
-  font-size: 1.2rem;
+  font-size: 0.85rem;
   font-weight: bold;
+}
+
+.stat-value.floor-value {
   color: var(--neon-mint);
   text-shadow: 0 0 5px var(--neon-mint-glow);
 }
 
-.score-number {
+.stat-value.mines-value,
+.stat-value.time-value {
+  color: var(--neon-magenta);
+  text-shadow: 0 0 5px var(--neon-magenta-glow);
   font-family: var(--font-mono);
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: var(--neon-2);
-  text-shadow: 0 0 5px var(--neon-2);
+  letter-spacing: 1px;
 }
 
-.restart-button {
-  width: 36px;
-  height: 36px;
-  font-size: 20px;
-  border: 2px solid var(--neon-purple);
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--neon-purple);
-  cursor: pointer;
-  transition: var(--transition-fast);
-  box-shadow: 0 0 5px var(--neon-purple-glow);
+.stat-value.score-value {
+  color: var(--neon-mint);
+  text-shadow: 0 0 5px var(--neon-mint-glow);
+}
+
+/* Relics Row - centered, wrapping */
+.roguelike-relics-row {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   justify-content: center;
-}
-
-.restart-button:hover {
-  background: rgba(191, 0, 255, 0.1);
-  box-shadow:
-    0 0 10px var(--neon-purple),
-    0 0 20px var(--neon-purple-glow);
-}
-
-.restart-button .home-icon {
-  width: 20px;
-  height: 20px;
-  display: block;
-}
-
-.active-powerups {
-  display: flex;
-  gap: 6px;
   align-items: center;
-  justify-content: center;
-  flex: 1;
+  gap: 5px;
+  width: 100%;
+  min-height: 28px;
+  padding: 6px 0;
+  border-top: 1px solid rgba(0, 245, 255, 0.2);
   position: relative;
+}
+
+/* Empty state placeholder */
+.relics-empty {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  opacity: 0.5;
+  letter-spacing: 0.5px;
 }
 
 /* Power-up Icon with Tooltip */
 .powerup-icon-wrapper {
   position: relative;
   cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  transition: var(--transition-fast);
+}
+
+/* Rarity-colored borders for active relic icons */
+.powerup-icon-wrapper.rarity-common {
+  border-color: var(--rarity-common);
+}
+
+.powerup-icon-wrapper.rarity-uncommon {
+  border-color: var(--rarity-uncommon);
+}
+
+.powerup-icon-wrapper.rarity-rare {
+  border-color: var(--rarity-rare);
+}
+
+.powerup-icon-wrapper.rarity-epic {
+  border-color: var(--rarity-epic);
+  box-shadow: 0 0 6px var(--rarity-epic);
 }
 
 .powerup-icon-emoji {
-  font-size: 1.2rem;
+  font-size: 1rem;
   filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5));
   transition: var(--transition-fast);
+  line-height: 1;
 }
 
 .powerup-icon-wrapper:hover .powerup-icon-emoji {
@@ -531,27 +530,130 @@
   filter: drop-shadow(0 0 10px var(--neon-mint)) drop-shadow(0 0 20px var(--neon-mint-glow));
 }
 
-/* Tooltip - compact vertical layout below icons */
+/* Peek icon styling */
+.powerup-icon-wrapper.peek.clickable .powerup-icon-emoji {
+  animation: peek-icon-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes peek-icon-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px var(--neon-purple)) drop-shadow(0 0 12px var(--neon-purple-glow));
+  }
+}
+
+.powerup-icon-wrapper.peek.peek-active .powerup-icon-emoji {
+  animation: none;
+  transform: scale(1.3);
+  filter: drop-shadow(0 0 10px var(--neon-purple)) drop-shadow(0 0 20px var(--neon-purple-glow));
+}
+
+/* Peek hint styling */
+.peek-hint {
+  border-color: var(--neon-purple) !important;
+  background: rgba(168, 85, 247, 0.1) !important;
+  color: var(--neon-purple) !important;
+}
+
+/* Safe Path icon glow when clickable */
+.powerup-icon-wrapper.safe-path.clickable .powerup-icon-emoji {
+  animation: safe-path-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes safe-path-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px var(--neon-green)) drop-shadow(0 0 8px var(--neon-green-glow));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px var(--neon-green)) drop-shadow(0 0 12px var(--neon-green-glow));
+  }
+}
+
+.powerup-icon-wrapper.safe-path.safe-path-active .powerup-icon-emoji {
+  animation: none;
+  transform: scale(1.3);
+  filter: drop-shadow(0 0 10px var(--neon-green)) drop-shadow(0 0 20px var(--neon-green-glow));
+}
+
+/* Defusal Kit icon glow when clickable */
+.powerup-icon-wrapper.defusal-kit.clickable .powerup-icon-emoji {
+  animation: defusal-kit-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes defusal-kit-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px var(--neon-red)) drop-shadow(0 0 8px var(--neon-red-glow));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px var(--neon-red)) drop-shadow(0 0 12px var(--neon-red-glow));
+  }
+}
+
+.powerup-icon-wrapper.defusal-kit.defusal-kit-active .powerup-icon-emoji {
+  animation: none;
+  transform: scale(1.3);
+  filter: drop-shadow(0 0 10px var(--neon-red)) drop-shadow(0 0 20px var(--neon-red-glow));
+}
+
+/* Survey icon glow when clickable */
+.powerup-icon-wrapper.survey.clickable .powerup-icon-emoji {
+  animation: survey-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes survey-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px var(--neon-yellow)) drop-shadow(0 0 8px var(--neon-yellow-glow));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px var(--neon-yellow)) drop-shadow(0 0 12px var(--neon-yellow-glow));
+  }
+}
+
+.powerup-icon-wrapper.survey.survey-active .powerup-icon-emoji {
+  animation: none;
+  transform: scale(1.3);
+  filter: drop-shadow(0 0 10px var(--neon-yellow)) drop-shadow(0 0 20px var(--neon-yellow-glow));
+}
+
+/* Survey hint styling */
+.survey-hint {
+  border-color: var(--neon-yellow) !important;
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: var(--neon-yellow) !important;
+}
+
+/* Survey badge styling */
+.survey-badge {
+  background: linear-gradient(135deg, var(--neon-yellow), #d97706) !important;
+}
+
+/* Tooltip - horizontal card layout below icons */
 .powerup-tooltip {
   position: absolute;
-  top: calc(100% + 12px);
+  /* top is set dynamically via inline style based on hovered icon row */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
+  gap: 8px;
+  padding: 12px 16px;
   background: var(--bg-void);
-  border: 2px solid var(--neon-purple);
+  border: 2px solid var(--neon-mint);
   border-radius: var(--radius-md);
   box-shadow:
-    0 0 15px var(--neon-purple-glow),
+    0 0 15px var(--neon-mint-glow),
     0 4px 20px rgba(0, 0, 0, 0.5);
   z-index: 100;
   pointer-events: none;
-  text-align: center;
-  max-width: 200px;
+  text-align: left;
+  width: max-content;
+  max-width: min(360px, 90vw);
   animation: tooltip-fade-in 0.15s ease-out;
 }
 
@@ -572,33 +674,75 @@
   bottom: 100%;
   transform: translateX(-50%);
   border: 8px solid transparent;
-  border-bottom-color: var(--neon-purple);
+  border-bottom-color: var(--neon-mint);
+}
+
+.powerup-tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .powerup-tooltip-name {
   font-family: var(--font-heading);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   letter-spacing: 1px;
   color: var(--neon-mint);
   text-shadow: 0 0 5px var(--neon-mint-glow);
 }
 
-.powerup-tooltip-type {
+/* Rarity badge for active relic tooltip */
+.powerup-tooltip-rarity {
   font-family: var(--font-mono);
   font-size: 0.5rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--neon-purple);
+  letter-spacing: 0.5px;
   padding: 2px 6px;
-  border: 1px solid var(--neon-purple);
+  border-radius: var(--radius-sm);
+}
+
+.powerup-tooltip-rarity.rarity-common {
+  color: var(--rarity-common);
+  border: 1px solid var(--rarity-common);
+  background: color-mix(in srgb, var(--rarity-common) 15%, transparent);
+}
+
+.powerup-tooltip-rarity.rarity-uncommon {
+  color: var(--rarity-uncommon);
+  border: 1px solid var(--rarity-uncommon);
+  background: color-mix(in srgb, var(--rarity-uncommon) 15%, transparent);
+}
+
+.powerup-tooltip-rarity.rarity-rare {
+  color: var(--rarity-rare);
+  border: 1px solid var(--rarity-rare);
+  background: color-mix(in srgb, var(--rarity-rare) 15%, transparent);
+}
+
+.powerup-tooltip-rarity.rarity-epic {
+  color: var(--rarity-epic);
+  border: 1px solid var(--rarity-epic);
+  background: color-mix(in srgb, var(--rarity-epic) 15%, transparent);
+  text-shadow: 0 0 8px var(--rarity-epic);
+}
+
+.powerup-tooltip-type {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--neon-mint);
+  padding: 2px 8px;
+  border: 1px solid var(--neon-mint);
   border-radius: var(--radius-sm);
 }
 
 .powerup-tooltip-desc {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .powerup-tooltip-status {
@@ -607,9 +751,334 @@
   letter-spacing: 1px;
   color: var(--neon-5);
   text-shadow: 0 0 5px var(--neon-5);
+  padding: 2px 8px;
+  border: 1px solid var(--neon-5);
+  border-radius: var(--radius-sm);
+}
+
+/* ==================== PASSIVE RELICS POPOVER ==================== */
+
+/* Passive badge (+N indicator) */
+.passive-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 22px;
+  padding: 0 6px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: var(--neon-mint);
+  background: var(--bg-void);
+  border: 1px solid var(--neon-mint);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-shadow: 0 0 5px var(--neon-mint-glow);
+  box-shadow: 0 0 6px var(--neon-mint-glow);
+}
+
+.passive-badge:hover {
+  background: rgba(0, 245, 255, 0.15);
+  box-shadow:
+    0 0 10px var(--neon-mint),
+    0 0 20px var(--neon-mint-glow);
+  transform: scale(1.05);
+}
+
+/* Passive popover container */
+.passive-popover {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-void);
+  border: 2px solid var(--neon-mint);
+  border-radius: var(--radius-md);
+  box-shadow:
+    0 0 15px var(--neon-mint-glow),
+    0 4px 20px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  min-width: 260px;
+  max-width: 340px;
+  animation: popover-fade-in 0.15s ease-out;
+}
+
+/* Invisible bridge to maintain hover when moving from badge to popover */
+.passive-popover::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  height: 16px; /* covers the 12px gap plus margin */
+}
+
+@keyframes popover-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Popover arrow */
+.passive-popover::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-bottom-color: var(--neon-mint);
+}
+
+/* Passive popover title */
+.passive-popover-title {
+  font-family: var(--font-heading);
+  font-size: 0.55rem;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Grid of passive relic icons */
+.passive-popover-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* Individual icon in popover grid */
+.passive-popover-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  cursor: default;
+  transition: var(--transition-fast);
+  border: 2px solid transparent;
+}
+
+/* Rarity-colored borders for popover icons */
+.passive-popover-icon.rarity-common {
+  border-color: var(--rarity-common);
+}
+
+.passive-popover-icon.rarity-uncommon {
+  border-color: var(--rarity-uncommon);
+}
+
+.passive-popover-icon.rarity-rare {
+  border-color: var(--rarity-rare);
+}
+
+.passive-popover-icon.rarity-epic {
+  border-color: var(--rarity-epic);
+  box-shadow: 0 0 6px var(--rarity-epic);
+}
+
+.passive-popover-icon:hover,
+.passive-popover-icon.hovered {
+  background: rgba(0, 245, 255, 0.15);
+  box-shadow: 0 0 8px var(--neon-mint-glow);
+}
+
+.passive-popover-icon .powerup-icon-emoji {
+  font-size: 1.3rem;
+}
+
+.passive-popover-icon.used .powerup-icon-emoji {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
+.passive-popover-icon.used::after {
+  content: '✕';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--neon-5);
+  text-shadow:
+    0 0 6px var(--neon-5),
+    0 0 12px rgba(255, 68, 68, 0.5);
+  pointer-events: none;
+}
+
+/* Detail area at bottom of popover */
+.passive-popover-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 245, 255, 0.3);
+  animation: detail-fade-in 0.1s ease-out;
+}
+
+@keyframes detail-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.passive-popover-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.passive-popover-detail-name {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  color: var(--neon-mint);
+  text-shadow: 0 0 5px var(--neon-mint-glow);
+}
+
+/* Rarity badge in detail area */
+.passive-popover-detail-rarity {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.passive-popover-detail-rarity.rarity-common {
+  color: var(--rarity-common);
+  border: 1px solid var(--rarity-common);
+  background: color-mix(in srgb, var(--rarity-common) 15%, transparent);
+}
+
+.passive-popover-detail-rarity.rarity-uncommon {
+  color: var(--rarity-uncommon);
+  border: 1px solid var(--rarity-uncommon);
+  background: color-mix(in srgb, var(--rarity-uncommon) 15%, transparent);
+}
+
+.passive-popover-detail-rarity.rarity-rare {
+  color: var(--rarity-rare);
+  border: 1px solid var(--rarity-rare);
+  background: color-mix(in srgb, var(--rarity-rare) 15%, transparent);
+}
+
+.passive-popover-detail-rarity.rarity-epic {
+  color: var(--rarity-epic);
+  border: 1px solid var(--rarity-epic);
+  background: color-mix(in srgb, var(--rarity-epic) 15%, transparent);
+  text-shadow: 0 0 8px var(--rarity-epic);
+}
+
+.passive-popover-detail-status {
+  font-family: var(--font-heading);
+  font-size: 0.5rem;
+  letter-spacing: 1px;
+  color: var(--neon-5);
+  text-shadow: 0 0 5px var(--neon-5);
   padding: 2px 6px;
   border: 1px solid var(--neon-5);
   border-radius: var(--radius-sm);
+}
+
+.passive-popover-detail-desc {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Passive popover icon badges (Mine Detector, Floor Scout) */
+.passive-popover-icon .mine-detector-badge {
+  top: -4px;
+  right: -4px;
+  min-width: 14px;
+  height: 14px;
+  font-size: 0.6rem;
+}
+
+/* Mobile styles for passive popover */
+@media (max-width: 640px) {
+  .passive-badge {
+    min-width: 24px;
+    height: 18px;
+    font-size: 0.65rem;
+  }
+
+  .passive-popover {
+    min-width: 220px;
+    max-width: 300px;
+    padding: 10px;
+  }
+
+  .passive-popover-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .passive-popover-icon .powerup-icon-emoji {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .passive-badge {
+    min-width: 22px;
+    height: 16px;
+    font-size: 0.6rem;
+    padding: 0 4px;
+  }
+
+  .passive-popover {
+    min-width: 200px;
+    max-width: 280px;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .passive-popover-grid {
+    gap: 6px;
+  }
+
+  .passive-popover-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .passive-popover-icon .powerup-icon-emoji {
+    font-size: 1rem;
+  }
+
+  .passive-popover-detail-name {
+    font-size: 0.75rem;
+  }
+
+  .passive-popover-detail-desc {
+    font-size: 0.65rem;
+  }
+
+  .passive-popover-detail-rarity {
+    font-size: 0.45rem;
+  }
 }
 
 /* Danger Sense Glow */
@@ -625,6 +1094,34 @@
   50% {
     box-shadow: inset 0 0 12px rgba(255, 68, 68, 0.5);
   }
+}
+
+/* Pattern Memory - safe diagonal glow (green) */
+.cell-pattern-memory {
+  animation: pattern-memory-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pattern-memory-pulse {
+  0%,
+  100% {
+    box-shadow: inset 0 0 8px rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: inset 0 0 14px rgba(34, 197, 94, 0.7);
+  }
+}
+
+/* Heat Map - tint revealed numbers by danger level */
+.cell-heat-low {
+  background: rgba(59, 130, 246, 0.15) !important; /* Blue tint for 1-2 */
+}
+
+.cell-heat-medium {
+  background: rgba(251, 146, 60, 0.2) !important; /* Orange tint for 3-4 */
+}
+
+.cell-heat-high {
+  background: rgba(239, 68, 68, 0.25) !important; /* Red tint for 5+ */
 }
 
 /* X-Ray Mode hint */
@@ -654,6 +1151,68 @@
 .cell-xray-target {
   border-color: var(--neon-mint) !important;
   box-shadow: inset 0 0 10px var(--neon-mint-glow) !important;
+}
+
+/* Peek mode target styling */
+.cell-peek-target {
+  border-color: var(--neon-purple) !important;
+  box-shadow: inset 0 0 10px var(--neon-purple-glow) !important;
+  cursor: crosshair;
+}
+
+/* Safe Path mode target styling */
+.cell-safe-path-target {
+  border-color: var(--neon-green) !important;
+  box-shadow: inset 0 0 10px var(--neon-green-glow) !important;
+  cursor: crosshair;
+}
+
+/* Defusal Kit mode target styling */
+.cell-defusal-target {
+  border-color: var(--neon-red) !important;
+  box-shadow: inset 0 0 10px var(--neon-red-glow) !important;
+  cursor: crosshair;
+}
+
+/* Survey mode target styling */
+.cell-survey-target {
+  border-color: var(--neon-yellow) !important;
+  box-shadow: inset 0 0 10px var(--neon-yellow-glow) !important;
+  cursor: crosshair;
+}
+
+/* Peeked cell - show the value temporarily */
+.cell-peeked {
+  background: rgba(168, 85, 247, 0.3) !important;
+  border-color: var(--neon-purple) !important;
+  box-shadow:
+    0 0 15px var(--neon-purple),
+    inset 0 0 10px var(--neon-purple-glow) !important;
+  animation: peek-pulse 0.5s ease-out;
+}
+
+@keyframes peek-pulse {
+  0% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.peek-number {
+  font-weight: bold;
+  animation: peek-fade 2s ease-out forwards;
+}
+
+@keyframes peek-fade {
+  0%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
 }
 
 .minesweeper-board.xray-mode {
@@ -694,10 +1253,22 @@
   color: var(--text-muted);
 }
 
-/* Mine Detector Zone Overlay */
+/* Mine Detector Zone - Subtle corner indicator dots */
 .cell-detector-zone {
-  border-color: rgba(255, 100, 0, 0.7) !important;
-  box-shadow: inset 0 0 6px rgba(255, 100, 0, 0.25);
+  position: relative;
+}
+
+.cell-detector-zone::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--neon-1);
+  box-shadow: 0 0 5px var(--neon-1);
+  pointer-events: none;
 }
 
 /* Chord Highlight - visual feedback when pressing on numbered cell */
@@ -748,6 +1319,16 @@
   }
 }
 
+/* Floor Scout Badge - green tint for zero-cell count */
+.floor-scout-badge {
+  color: var(--neon-2);
+  border-color: var(--neon-2);
+  text-shadow:
+    0 0 5px var(--neon-2),
+    0 0 10px var(--neon-2);
+  box-shadow: 0 0 6px var(--neon-2);
+}
+
 /* Start Screen */
 .start-screen {
   display: flex;
@@ -762,10 +1343,10 @@
   font-family: var(--font-heading);
   font-size: 2rem;
   letter-spacing: 4px;
-  color: var(--neon-magenta);
+  color: var(--neon-mint);
   text-shadow:
-    0 0 10px var(--neon-magenta),
-    0 0 20px var(--neon-magenta-glow);
+    0 0 10px var(--neon-mint),
+    0 0 20px var(--neon-mint-glow);
   margin: 0;
 }
 
@@ -874,10 +1455,10 @@
 .unlock-badge {
   font-size: 0.75rem;
   padding: 4px 8px;
-  background: rgba(191, 0, 255, 0.1);
-  border: 1px solid var(--neon-purple);
+  background: rgba(0, 245, 255, 0.1);
+  border: 1px solid var(--neon-mint);
   border-radius: var(--radius-sm);
-  color: var(--neon-purple);
+  color: var(--neon-mint);
 }
 
 /* Power-Up Draft Screen */
@@ -928,6 +1509,73 @@
   width: 100%;
 }
 
+/* Rarity CSS variables */
+:root {
+  --rarity-common: #9ca3af;
+  --rarity-uncommon: #22c55e;
+  --rarity-rare: #3b82f6;
+  --rarity-epic: #a855f7;
+}
+
+/* ==================== SHARED BADGE STYLES ==================== */
+
+/* Rarity badge - used for showing rarity labels */
+.rarity-badge {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.rarity-badge.rarity-common {
+  color: var(--rarity-common);
+  border: 1px solid var(--rarity-common);
+  background: color-mix(in srgb, var(--rarity-common) 15%, transparent);
+}
+
+.rarity-badge.rarity-uncommon {
+  color: var(--rarity-uncommon);
+  border: 1px solid var(--rarity-uncommon);
+  background: color-mix(in srgb, var(--rarity-uncommon) 15%, transparent);
+}
+
+.rarity-badge.rarity-rare {
+  color: var(--rarity-rare);
+  border: 1px solid var(--rarity-rare);
+  background: color-mix(in srgb, var(--rarity-rare) 15%, transparent);
+}
+
+.rarity-badge.rarity-epic {
+  color: var(--rarity-epic);
+  border: 1px solid var(--rarity-epic);
+  background: color-mix(in srgb, var(--rarity-epic) 15%, transparent);
+  text-shadow: 0 0 8px var(--rarity-epic);
+}
+
+/* Type badge - used for showing active/passive labels */
+.type-badge {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.type-badge.passive {
+  color: var(--neon-mint);
+  border: 1px solid var(--neon-mint);
+  background: rgba(0, 245, 255, 0.1);
+}
+
+.type-badge.active {
+  color: var(--neon-2);
+  border: 1px solid var(--neon-2);
+  background: rgba(0, 255, 136, 0.1);
+}
+
 .draft-card {
   display: flex;
   align-items: center;
@@ -935,21 +1583,50 @@
   padding: 12px 16px;
   width: 100%;
   background: var(--bg-surface);
-  border: 2px solid var(--neon-purple);
+  border: 2px solid var(--rarity-color, var(--neon-purple));
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: var(--transition-fast);
-  box-shadow: 0 0 8px var(--neon-purple-glow);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--rarity-color, var(--neon-purple)) 50%, transparent);
   text-align: left;
 }
 
 .draft-card:hover {
-  background: rgba(191, 0, 255, 0.1);
-  border-color: var(--neon-magenta);
+  background: color-mix(in srgb, var(--rarity-color, var(--neon-purple)) 15%, transparent);
   box-shadow:
-    0 0 15px var(--neon-magenta),
-    0 0 30px var(--neon-magenta-glow);
+    0 0 15px var(--rarity-color, var(--neon-magenta)),
+    0 0 30px color-mix(in srgb, var(--rarity-color, var(--neon-magenta)) 40%, transparent);
   transform: translateX(4px);
+}
+
+/* Rarity-specific card borders */
+.draft-card.rarity-common {
+  border-color: var(--rarity-common);
+}
+
+.draft-card.rarity-uncommon {
+  border-color: var(--rarity-uncommon);
+}
+
+.draft-card.rarity-rare {
+  border-color: var(--rarity-rare);
+}
+
+.draft-card.rarity-epic {
+  border-color: var(--rarity-epic);
+  animation: epic-glow 2s ease-in-out infinite;
+}
+
+@keyframes epic-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 10px var(--rarity-epic);
+  }
+  50% {
+    box-shadow:
+      0 0 20px var(--rarity-epic),
+      0 0 40px color-mix(in srgb, var(--rarity-epic) 50%, transparent);
+  }
 }
 
 .draft-card-left {
@@ -986,6 +1663,40 @@
   font-size: 0.95rem;
   letter-spacing: 1px;
   color: var(--text-primary);
+}
+
+.draft-card-rarity {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.draft-card-rarity.rarity-common {
+  color: var(--rarity-common);
+  border: 1px solid var(--rarity-common);
+  background: color-mix(in srgb, var(--rarity-common) 15%, transparent);
+}
+
+.draft-card-rarity.rarity-uncommon {
+  color: var(--rarity-uncommon);
+  border: 1px solid var(--rarity-uncommon);
+  background: color-mix(in srgb, var(--rarity-uncommon) 15%, transparent);
+}
+
+.draft-card-rarity.rarity-rare {
+  color: var(--rarity-rare);
+  border: 1px solid var(--rarity-rare);
+  background: color-mix(in srgb, var(--rarity-rare) 15%, transparent);
+}
+
+.draft-card-rarity.rarity-epic {
+  color: var(--rarity-epic);
+  border: 1px solid var(--rarity-epic);
+  background: color-mix(in srgb, var(--rarity-epic) 15%, transparent);
+  text-shadow: 0 0 8px var(--rarity-epic);
 }
 
 .draft-card-type {
@@ -1149,18 +1860,19 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 16px;
+  padding: 16px 20px;
   background: var(--bg-surface);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md);
   width: 100%;
-  max-width: 280px;
+  max-width: 340px;
 }
 
 .summary-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
 }
 
 .summary-label {
@@ -1205,8 +1917,10 @@
   gap: 4px;
   padding: 10px 16px;
   background: var(--bg-surface);
-  border: 1px solid rgba(191, 0, 255, 0.3);
+  border: 1px solid rgba(0, 245, 255, 0.3);
   border-radius: var(--radius-md);
+  width: 100%;
+  max-width: 340px;
 }
 
 .run-seed-label {
@@ -1221,18 +1935,18 @@
   font-family: var(--font-mono);
   font-size: 1.1rem;
   font-weight: bold;
-  color: var(--neon-purple);
-  text-shadow: 0 0 5px var(--neon-purple-glow);
+  color: var(--neon-mint);
+  text-shadow: 0 0 5px var(--neon-mint-glow);
   letter-spacing: 2px;
   cursor: pointer;
   transition: var(--transition-fast);
 }
 
 .run-seed-value:hover {
-  color: var(--neon-magenta);
+  color: var(--neon-mint);
   text-shadow:
-    0 0 5px var(--neon-magenta),
-    0 0 10px var(--neon-magenta-glow);
+    0 0 8px var(--neon-mint),
+    0 0 15px var(--neon-mint-glow);
 }
 
 .unlock-notification {
@@ -1241,8 +1955,8 @@
   align-items: center;
   gap: 4px;
   padding: 12px 20px;
-  background: rgba(191, 0, 255, 0.1);
-  border: 2px solid var(--neon-purple);
+  background: rgba(0, 245, 255, 0.1);
+  border: 2px solid var(--neon-mint);
   border-radius: var(--radius-md);
   animation: pulse-border 1.5s ease-in-out infinite;
 }
@@ -1250,12 +1964,12 @@
 @keyframes pulse-border {
   0%,
   100% {
-    box-shadow: 0 0 10px var(--neon-purple-glow);
+    box-shadow: 0 0 10px var(--neon-mint-glow);
   }
   50% {
     box-shadow:
-      0 0 20px var(--neon-purple),
-      0 0 40px var(--neon-purple-glow);
+      0 0 20px var(--neon-mint),
+      0 0 40px var(--neon-mint-glow);
   }
 }
 
@@ -1266,7 +1980,7 @@
 .unlock-text {
   font-family: var(--font-heading);
   font-size: 0.85rem;
-  color: var(--neon-purple);
+  color: var(--neon-mint);
 }
 
 .unlock-description {
@@ -1287,6 +2001,8 @@
   cursor: pointer;
   transition: var(--transition-fast);
   box-shadow: 0 0 10px var(--neon-mint-glow);
+  width: 100%;
+  max-width: 340px;
 }
 
 .try-again-button:hover {
@@ -1317,6 +2033,11 @@
 
 /* Mobile Responsive for Roguelike */
 @media (max-width: 640px) {
+  :root {
+    --led-font: 16px;
+    --led-width: 40px;
+  }
+
   .roguelike-mode {
     height: 450px;
   }
@@ -1326,12 +2047,27 @@
   }
 
   .roguelike-header {
-    max-width: 100%;
+    padding: 8px 12px;
+    gap: 6px;
+    margin-bottom: 12px;
   }
 
-  .floor-number,
-  .score-number {
-    font-size: 1rem;
+  .stat-value {
+    font-size: 0.9rem;
+  }
+
+  .roguelike-relics-row {
+    gap: 5px;
+    padding: 4px 0;
+  }
+
+  .powerup-icon-wrapper {
+    width: 26px;
+    height: 26px;
+  }
+
+  .powerup-icon-emoji {
+    font-size: 0.9rem;
   }
 
   .draft-screen {
@@ -1358,8 +2094,36 @@
 }
 
 @media (max-width: 480px) {
+  :root {
+    --led-font: 14px;
+    --led-width: 36px;
+  }
+
   .roguelike-mode {
     height: 420px;
+  }
+
+  .roguelike-header {
+    padding: 6px 10px;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+
+  .roguelike-stat-item {
+    gap: 1px;
+  }
+
+  .stat-label {
+    font-size: 0.4rem;
+  }
+
+  .stat-value {
+    font-size: 0.8rem;
+  }
+
+  .roguelike-relics-row {
+    gap: 4px;
+    padding: 3px 0;
   }
 
   .start-title {
@@ -1375,6 +2139,15 @@
 
   .run-over-title {
     font-size: 1.4rem;
+  }
+
+  .powerup-icon-wrapper {
+    width: 24px;
+    height: 24px;
+  }
+
+  .powerup-icon-emoji {
+    font-size: 0.85rem;
   }
 }
 
@@ -1999,5 +2772,504 @@
   }
   100% {
     box-shadow: none;
+  }
+}
+
+/* ==================== UNLOCK SPLASH SCREEN ==================== */
+
+.unlock-splash-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  cursor: pointer;
+  animation: unlockFadeIn 0.5s ease-out;
+}
+
+@keyframes unlockFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.unlock-splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px;
+  max-width: 320px;
+  text-align: center;
+}
+
+.unlock-splash-celebration {
+  display: flex;
+  gap: 12px;
+  font-size: 2rem;
+}
+
+.unlock-star {
+  color: var(--neon-mint);
+  text-shadow:
+    0 0 10px var(--neon-mint),
+    0 0 20px var(--neon-mint-glow);
+  animation: starPulse 1s ease-in-out infinite;
+}
+
+.unlock-star:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.unlock-star:nth-child(2) {
+  animation-delay: 0.2s;
+  font-size: 2.5rem;
+}
+
+.unlock-star:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes starPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.unlock-splash-title {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  letter-spacing: 4px;
+  color: var(--neon-mint);
+  text-shadow:
+    0 0 10px var(--neon-mint),
+    0 0 20px var(--neon-mint),
+    0 0 40px var(--neon-mint-glow);
+  margin: 0;
+  animation: titlePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+  0%,
+  100% {
+    text-shadow:
+      0 0 10px var(--neon-mint),
+      0 0 20px var(--neon-mint),
+      0 0 40px var(--neon-mint-glow);
+  }
+  50% {
+    text-shadow:
+      0 0 20px var(--neon-mint),
+      0 0 40px var(--neon-mint),
+      0 0 80px var(--neon-mint-glow);
+  }
+}
+
+/* Unlock Relic Card - styled like draft cards */
+.unlock-relic-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--bg-surface);
+  border: 2px solid var(--rarity-common);
+  border-radius: var(--radius-md);
+  animation: cardAppear 0.5s ease-out 0.3s both;
+  text-align: left;
+  max-width: 280px;
+}
+
+.unlock-relic-card.rarity-common {
+  border-color: var(--rarity-common);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--rarity-common) 40%, transparent);
+}
+
+.unlock-relic-card.rarity-uncommon {
+  border-color: var(--rarity-uncommon);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--rarity-uncommon) 40%, transparent);
+}
+
+.unlock-relic-card.rarity-rare {
+  border-color: var(--rarity-rare);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--rarity-rare) 40%, transparent);
+}
+
+.unlock-relic-card.rarity-epic {
+  border-color: var(--rarity-epic);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--rarity-epic) 50%, transparent);
+  animation: cardAppear 0.5s ease-out 0.3s both, epic-glow 2s ease-in-out infinite;
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.unlock-relic-icon-box {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+}
+
+.unlock-relic-icon {
+  font-size: 1.8rem;
+}
+
+.unlock-relic-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.unlock-relic-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.unlock-relic-name {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+  color: var(--text-primary);
+}
+
+.unlock-relic-rarity {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.unlock-relic-rarity.rarity-common {
+  color: var(--rarity-common);
+  border: 1px solid var(--rarity-common);
+  background: color-mix(in srgb, var(--rarity-common) 15%, transparent);
+}
+
+.unlock-relic-rarity.rarity-uncommon {
+  color: var(--rarity-uncommon);
+  border: 1px solid var(--rarity-uncommon);
+  background: color-mix(in srgb, var(--rarity-uncommon) 15%, transparent);
+}
+
+.unlock-relic-rarity.rarity-rare {
+  color: var(--rarity-rare);
+  border: 1px solid var(--rarity-rare);
+  background: color-mix(in srgb, var(--rarity-rare) 15%, transparent);
+}
+
+.unlock-relic-rarity.rarity-epic {
+  color: var(--rarity-epic);
+  border: 1px solid var(--rarity-epic);
+  background: color-mix(in srgb, var(--rarity-epic) 15%, transparent);
+  text-shadow: 0 0 8px var(--rarity-epic);
+}
+
+.unlock-relic-description {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.unlock-splash-hint {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  animation: cardAppear 0.5s ease-out 0.7s both;
+}
+
+/* ==================== SEE RELICS BUTTON ==================== */
+
+.see-relics-button {
+  padding: 4px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  background: transparent;
+  border: 1px solid var(--neon-mint);
+  border-radius: var(--radius-sm);
+  color: var(--neon-mint);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.see-relics-button:hover {
+  background: rgba(0, 245, 255, 0.1);
+  box-shadow: 0 0 10px var(--neon-mint-glow);
+}
+
+/* ==================== RUN OVER RELICS POPOVER ==================== */
+/* Styled like the passive-popover in RoguelikeHeader */
+
+.runover-relics-popover {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  background: var(--bg-elevated);
+  border: 2px solid var(--neon-mint);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 280px;
+  max-width: 340px;
+  box-shadow: 0 0 20px var(--neon-mint-glow);
+  animation: popoverFadeIn 0.15s ease-out;
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.runover-relics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.runover-relics-title {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  color: var(--neon-mint);
+  text-transform: uppercase;
+}
+
+.runover-relics-close {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  padding: 0;
+  line-height: 1;
+}
+
+.runover-relics-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.runover-relics-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.runover-relic-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-sm);
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.runover-relic-icon.rarity-common {
+  border-color: var(--rarity-common);
+}
+
+.runover-relic-icon.rarity-uncommon {
+  border-color: var(--rarity-uncommon);
+}
+
+.runover-relic-icon.rarity-rare {
+  border-color: var(--rarity-rare);
+}
+
+.runover-relic-icon.rarity-epic {
+  border-color: var(--rarity-epic);
+  box-shadow: 0 0 6px var(--rarity-epic);
+}
+
+.runover-relic-icon:hover,
+.runover-relic-icon.hovered {
+  background: rgba(0, 245, 255, 0.15);
+  box-shadow: 0 0 8px var(--neon-mint-glow);
+}
+
+.runover-relic-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  height: 72px;
+}
+
+.runover-relic-hint {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.runover-relic-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.runover-relic-detail-name {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  color: var(--text-primary);
+}
+
+.runover-relic-detail-rarity {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.runover-relic-detail-rarity.rarity-common {
+  color: var(--rarity-common);
+  border: 1px solid var(--rarity-common);
+  background: color-mix(in srgb, var(--rarity-common) 15%, transparent);
+}
+
+.runover-relic-detail-rarity.rarity-uncommon {
+  color: var(--rarity-uncommon);
+  border: 1px solid var(--rarity-uncommon);
+  background: color-mix(in srgb, var(--rarity-uncommon) 15%, transparent);
+}
+
+.runover-relic-detail-rarity.rarity-rare {
+  color: var(--rarity-rare);
+  border: 1px solid var(--rarity-rare);
+  background: color-mix(in srgb, var(--rarity-rare) 15%, transparent);
+}
+
+.runover-relic-detail-rarity.rarity-epic {
+  color: var(--rarity-epic);
+  border: 1px solid var(--rarity-epic);
+  background: color-mix(in srgb, var(--rarity-epic) 15%, transparent);
+  text-shadow: 0 0 8px var(--rarity-epic);
+}
+
+.runover-relic-detail-type {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.runover-relic-detail-type.passive {
+  color: var(--neon-mint);
+  border: 1px solid var(--neon-mint);
+  background: rgba(0, 245, 255, 0.1);
+}
+
+.runover-relic-detail-type.active {
+  color: var(--neon-2);
+  border: 1px solid var(--neon-2);
+  background: rgba(0, 255, 136, 0.1);
+}
+
+.runover-relic-detail-desc {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Mobile responsive for unlock splash and relics popover */
+@media (max-width: 480px) {
+  .unlock-splash-content {
+    padding: 24px 16px;
+  }
+
+  .unlock-splash-celebration {
+    gap: 8px;
+    font-size: 1.5rem;
+  }
+
+  .unlock-star:nth-child(2) {
+    font-size: 2rem;
+  }
+
+  .unlock-splash-title {
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+  }
+
+  .runover-relics-popover {
+    min-width: 260px;
+    max-width: 300px;
+    padding: 10px;
+  }
+
+  .runover-relic-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1.1rem;
+  }
+
+  .runover-relic-detail-name {
+    font-size: 0.75rem;
+  }
+
+  .runover-relic-detail-desc {
+    font-size: 0.6rem;
   }
 }

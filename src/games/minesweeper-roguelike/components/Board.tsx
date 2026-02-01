@@ -8,8 +8,19 @@ interface BoardProps {
   onChord: (row: number, col: number) => void;
   gameOver: boolean;
   dangerCells?: Set<string>;
+  patternMemoryCells?: Set<string>;
+  heatMapEnabled?: boolean;
   xRayMode?: boolean;
+  peekMode?: boolean;
+  safePathMode?: boolean;
+  defusalKitMode?: boolean;
+  peekCell?: { row: number; col: number; value: number | 'mine' } | null;
   onXRay?: (row: number, col: number) => void;
+  onPeek?: (row: number, col: number) => void;
+  onSafePath?: (row: number, col: number) => void;
+  onDefusalKit?: (row: number, col: number) => void;
+  surveyMode?: boolean;
+  onSurvey?: (row: number, col: number) => void;
   onCellHover?: (row: number, col: number) => void;
   onCellHoverEnd?: () => void;
   detectorCenter?: { row: number; col: number } | null;
@@ -25,8 +36,19 @@ function Board({
   onChord,
   gameOver,
   dangerCells,
+  patternMemoryCells,
+  heatMapEnabled = false,
   xRayMode = false,
+  peekMode = false,
+  safePathMode = false,
+  defusalKitMode = false,
+  surveyMode = false,
+  peekCell,
   onXRay,
+  onPeek,
+  onSafePath,
+  onDefusalKit,
+  onSurvey,
   onCellHover,
   onCellHoverEnd,
   detectorCenter,
@@ -58,8 +80,23 @@ function Board({
               onChord={onChord}
               gameOver={gameOver}
               hasDanger={dangerCells?.has(`${cell.row},${cell.col}`)}
+              hasPatternMemory={patternMemoryCells?.has(`${cell.row},${cell.col}`)}
+              heatMapEnabled={heatMapEnabled}
               xRayMode={xRayMode}
+              peekMode={peekMode}
+              safePathMode={safePathMode}
+              defusalKitMode={defusalKitMode}
+              surveyMode={surveyMode}
+              peekValue={
+                peekCell?.row === cell.row && peekCell?.col === cell.col
+                  ? peekCell.value
+                  : null
+              }
               onXRay={onXRay}
+              onPeek={onPeek}
+              onSafePath={onSafePath}
+              onDefusalKit={onDefusalKit}
+              onSurvey={onSurvey}
               onHover={onCellHover}
               onHoverEnd={onCellHoverEnd}
               inDetectorZone={isInDetectorZone(cell.row, cell.col)}

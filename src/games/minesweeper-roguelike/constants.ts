@@ -1,4 +1,4 @@
-import { FloorConfig, PowerUp, PowerUpId } from './types';
+import { FloorConfig, PowerUp, PowerUpId, Rarity } from './types';
 
 // Floor configurations - escalate from floor 1 (6x6, 4 mines) to floor 10 (12x12, 40 mines)
 export const FLOOR_CONFIGS: FloorConfig[] = [
@@ -34,36 +34,31 @@ export function getFloorConfig(floor: number, isMobile: boolean): FloorConfig {
   return configs[index];
 }
 
-// MVP Power-ups pool
-export const POWER_UP_POOL: PowerUp[] = [
+// Rarity weights for draft selection (must sum to 100)
+export const RARITY_WEIGHTS: Record<Rarity, number> = {
+  common: 50,
+  uncommon: 30,
+  rare: 15,
+  epic: 5,
+};
+
+// Rarity display colors (for UI)
+export const RARITY_COLORS: Record<Rarity, string> = {
+  common: '#9ca3af', // Gray
+  uncommon: '#22c55e', // Green
+  rare: '#3b82f6', // Blue
+  epic: '#a855f7', // Purple
+};
+
+// ==================== COMMON RELICS ====================
+export const COMMON_POWER_UPS: PowerUp[] = [
   {
-    id: 'iron-will',
-    name: 'Iron Will',
-    description: 'Survive one mine click (once per run)',
-    icon: '🛡️',
+    id: 'edge-walker',
+    name: 'Edge Walker',
+    description: 'All 4 corner cells revealed (if safe) or flagged (if mine) at floor start',
+    icon: '🧭',
     type: 'passive',
-  },
-  {
-    id: 'x-ray-vision',
-    name: 'X-Ray Vision',
-    description: 'Reveal a 3×3 area safely (once per floor)',
-    icon: '👁️',
-    type: 'active',
-    usesPerFloor: 1,
-  },
-  {
-    id: 'lucky-start',
-    name: 'Lucky Start',
-    description: 'Reveals 3 extra safe cells in unexplored areas',
-    icon: '🍀',
-    type: 'passive',
-  },
-  {
-    id: 'sixth-sense',
-    name: 'Sixth Sense',
-    description: 'First click triggers the nearest big cascade',
-    icon: '✨',
-    type: 'passive',
+    rarity: 'common',
   },
   {
     id: 'danger-sense',
@@ -71,17 +66,184 @@ export const POWER_UP_POOL: PowerUp[] = [
     description: 'Up to 3 cells near 3+ mines have a subtle glow',
     icon: '⚠️',
     type: 'passive',
+    rarity: 'common',
+  },
+  {
+    id: 'cautious-start',
+    name: 'Cautious Start',
+    description: 'First click each floor guaranteed to have ≤2 adjacent mines',
+    icon: '🐢',
+    type: 'passive',
+    rarity: 'common',
+  },
+  {
+    id: 'heat-map',
+    name: 'Heat Map',
+    description: 'Revealed numbers tinted by danger (blue 1-2, orange 3-4, red 5+)',
+    icon: '🌡️',
+    type: 'passive',
+    rarity: 'common',
+  },
+  {
+    id: 'quick-recovery',
+    name: 'Quick Recovery',
+    description: 'If you die before revealing 10 cells, restart floor once per run',
+    icon: '💫',
+    type: 'passive',
+    rarity: 'common',
+  },
+  {
+    id: 'breathing-room',
+    name: 'Breathing Room',
+    description: 'First click each floor guarantees 2×2 safe area',
+    icon: '🫁',
+    type: 'passive',
+    rarity: 'common',
+  },
+  {
+    id: 'floor-scout',
+    name: 'Floor Scout',
+    description: 'At floor start, shows count of cells with 0 adjacent mines',
+    icon: '🔍',
+    type: 'passive',
+    rarity: 'common',
   },
 ];
 
-// Unlockable power-up (reach floor 5)
-export const MINE_DETECTOR_POWER_UP: PowerUp = {
-  id: 'mine-detector',
-  name: 'Mine Detector',
-  description: 'Shows exact mine count in a 5×5 area around cursor',
-  icon: '📡',
-  type: 'passive',
-};
+// ==================== UNCOMMON RELICS ====================
+export const UNCOMMON_POWER_UPS: PowerUp[] = [
+  {
+    id: 'pattern-memory',
+    name: 'Pattern Memory',
+    description: 'After flagging a mine, diagonal cells glow green if safe',
+    icon: '🧩',
+    type: 'passive',
+    rarity: 'uncommon',
+  },
+  {
+    id: 'survey',
+    name: 'Survey',
+    description: 'Once per floor, reveal mine count in any row OR column',
+    icon: '📊',
+    type: 'active',
+    rarity: 'uncommon',
+    usesPerFloor: 1,
+  },
+  {
+    id: 'momentum',
+    name: 'Momentum',
+    description: 'After cascade reveals 5+ cells, next click guaranteed safe',
+    icon: '⚡',
+    type: 'passive',
+    rarity: 'uncommon',
+  },
+  {
+    id: 'lucky-start',
+    name: 'Lucky Start',
+    description: 'First click reveals 3 additional safe cells in isolated areas',
+    icon: '🍀',
+    type: 'passive',
+    rarity: 'uncommon',
+  },
+  {
+    id: 'sixth-sense',
+    name: 'Sixth Sense',
+    description: 'First click redirected to nearest 0-cell for max cascade',
+    icon: '✨',
+    type: 'passive',
+    rarity: 'uncommon',
+  },
+  {
+    id: 'mine-detector',
+    name: 'Mine Detector',
+    description: 'Hover shows mine count in 5×5 area',
+    icon: '📡',
+    type: 'passive',
+    rarity: 'uncommon',
+  },
+];
+
+// ==================== RARE RELICS ====================
+export const RARE_POWER_UPS: PowerUp[] = [
+  {
+    id: 'peek',
+    name: 'Peek',
+    description: 'Once per floor, preview a cell (see mine or number) without revealing',
+    icon: '👀',
+    type: 'active',
+    rarity: 'rare',
+    usesPerFloor: 1,
+  },
+  {
+    id: 'safe-path',
+    name: 'Safe Path',
+    description: 'Once per floor, reveal up to 5 safe cells in a chosen row or column',
+    icon: '🛤️',
+    type: 'active',
+    rarity: 'rare',
+    usesPerFloor: 1,
+  },
+  {
+    id: 'defusal-kit',
+    name: 'Defusal Kit',
+    description: 'Once per floor, remove a correctly flagged mine. Incorrect flags waste the charge',
+    icon: '🔧',
+    type: 'active',
+    rarity: 'rare',
+    usesPerFloor: 1,
+  },
+  {
+    id: 'iron-will',
+    name: 'Iron Will',
+    description: 'Survive one mine click per run (mine becomes flagged instead)',
+    icon: '🛡️',
+    type: 'passive',
+    rarity: 'rare',
+  },
+  {
+    id: 'x-ray-vision',
+    name: 'X-Ray Vision',
+    description: 'Once per floor, safely reveal 3×3 area (mines flagged, safe cells revealed)',
+    icon: '👁️',
+    type: 'active',
+    rarity: 'rare',
+    usesPerFloor: 1,
+  },
+];
+
+// ==================== EPIC RELICS ====================
+export const EPIC_POWER_UPS: PowerUp[] = [
+  {
+    id: 'probability-lens',
+    name: 'Probability Lens',
+    description: 'Once per floor, highlights the safest unrevealed cell on the board',
+    icon: '🔮',
+    type: 'active',
+    rarity: 'epic',
+    usesPerFloor: 1,
+  },
+  {
+    id: 'oracles-gift',
+    name: "Oracle's Gift",
+    description: 'All true 50/50 situations show the safe choice. BUT: +25% mine density',
+    icon: '🌟',
+    type: 'passive',
+    rarity: 'epic',
+  },
+];
+
+// Combined power-up pool (all relics)
+export const POWER_UP_POOL: PowerUp[] = [
+  ...COMMON_POWER_UPS,
+  ...UNCOMMON_POWER_UPS,
+  ...RARE_POWER_UPS,
+  ...EPIC_POWER_UPS,
+];
+
+// Legacy constant for backwards compatibility (mine-detector was previously unlockable)
+export const MINE_DETECTOR_POWER_UP: PowerUp = UNCOMMON_POWER_UPS.find(
+  (p) => p.id === 'mine-detector'
+)!;
 
 // Scoring constants
 export const SCORING = {
@@ -104,16 +266,22 @@ export function getPowerUpById(id: PowerUpId): PowerUp | null {
   return null;
 }
 
+// Power-ups that require unlocking (not available by default)
+export const UNLOCKABLE_POWER_UPS: PowerUpId[] = ['mine-detector'];
+
 // Get available power-ups based on unlocks
 export function getAvailablePowerUps(unlocks: PowerUpId[]): PowerUp[] {
-  const pool = [...POWER_UP_POOL];
-  if (unlocks.includes('mine-detector')) {
-    pool.push(MINE_DETECTOR_POWER_UP);
-  }
-  return pool;
+  return POWER_UP_POOL.filter((p) => {
+    // If it's an unlockable power-up, check if it's unlocked
+    if (UNLOCKABLE_POWER_UPS.includes(p.id)) {
+      return unlocks.includes(p.id);
+    }
+    // Otherwise, always available
+    return true;
+  });
 }
 
-// Select N random power-ups for draft (excluding already owned)
+// Select N random power-ups for draft using weighted rarity selection
 export function selectDraftOptions(
   availablePool: PowerUp[],
   ownedIds: PowerUpId[],
@@ -121,14 +289,34 @@ export function selectDraftOptions(
 ): PowerUp[] {
   const filteredPool = availablePool.filter((p) => !ownedIds.includes(p.id));
 
-  // Shuffle using Fisher-Yates
-  const shuffled = [...filteredPool];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  if (filteredPool.length === 0) return [];
+
+  const selected: PowerUp[] = [];
+  const remaining = [...filteredPool];
+
+  for (let i = 0; i < count && remaining.length > 0; i++) {
+    // Calculate total weight of remaining power-ups
+    const totalWeight = remaining.reduce((sum, p) => sum + RARITY_WEIGHTS[p.rarity], 0);
+
+    // Pick a random point in the weight distribution
+    let roll = Math.random() * totalWeight;
+
+    // Find which power-up this roll corresponds to
+    let selectedIndex = 0;
+    for (let j = 0; j < remaining.length; j++) {
+      roll -= RARITY_WEIGHTS[remaining[j].rarity];
+      if (roll <= 0) {
+        selectedIndex = j;
+        break;
+      }
+    }
+
+    // Add selected power-up and remove from remaining pool
+    selected.push(remaining[selectedIndex]);
+    remaining.splice(selectedIndex, 1);
   }
 
-  return shuffled.slice(0, count);
+  return selected;
 }
 
 export const MAX_FLOOR = 10;
