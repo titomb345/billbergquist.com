@@ -12,6 +12,7 @@ import {
 import {
   createEmptyBoard,
   placeMines,
+  placeMinesWithConstraints,
   revealCell,
   toggleFlag,
   chordReveal,
@@ -19,12 +20,17 @@ import {
 } from '../logic/gameLogic';
 import {
   createRoguelikeInitialState,
+  createInitialRunState,
   setupFloor,
   hasPowerUp,
   calculateDangerCells,
   applyLuckyStart,
   applySixthSense,
   applyXRayVision,
+  applyEdgeWalker,
+  applySafePath,
+  applyDefusalKit,
+  calculateLineMineCount,
   calculateRevealScore,
   calculateFloorClearBonus,
   countRevealedCells,
@@ -32,6 +38,8 @@ import {
   isFinalFloor,
   countFlags,
   calculateChordHighlightCells,
+  countZeroCells,
+  calculatePatternMemoryCells,
 } from '../logic/roguelikeLogic';
 import { getFloorConfig, selectDraftOptions, getAvailablePowerUps } from '../constants';
 import { saveGameState, loadGameState, clearGameState } from '../persistence';
@@ -121,6 +129,7 @@ function roguelikeReducer(
       return {
         ...state,
         phase: GamePhase.Start,
+        run: createInitialRunState(),
       };
     }
 
@@ -152,11 +161,23 @@ function roguelikeReducer(
       let newPhase: GamePhase = state.phase;
       let newDraftOptions: PowerUp[] = [];
       let newDangerCells = state.dangerCells;
+      let newZeroCellCount: number | null = state.zeroCellCount;
+      let newCellsRevealedThisFloor = state.cellsRevealedThisFloor;
 
       // Handle first click - place mines after
       if (state.isFirstClick) {
         const config = state.floorConfig;
-        newBoard = placeMines(createEmptyBoard(config), config, row, col);
+        const hasCautiousStart = hasPowerUp(state.run, 'cautious-start');
+        const hasBreathingRoom = hasPowerUp(state.run, 'breathing-room');
+
+        if (hasCautiousStart || hasBreathingRoom) {
+          newBoard = placeMinesWithConstraints(createEmptyBoard(config), config, row, col, {
+            cautiousStart: hasCautiousStart,
+            breathingRoom: hasBreathingRoom,
+          });
+        } else {
+          newBoard = placeMines(createEmptyBoard(config), config, row, col);
+        }
 
         // Apply Sixth Sense on first click
         if (hasPowerUp(state.run, 'sixth-sense')) {
@@ -171,20 +192,52 @@ function roguelikeReducer(
           newRun.luckyStartUsedThisFloor = true;
         }
 
+        // Apply Edge Walker after mines are placed
+        if (hasPowerUp(state.run, 'edge-walker')) {
+          newBoard = applyEdgeWalker(newBoard);
+        }
+
         // Calculate danger cells if player has Danger Sense
         if (hasPowerUp(state.run, 'danger-sense')) {
           newDangerCells = calculateDangerCells(newBoard);
         }
 
+        // Calculate zero-cell count for Floor Scout
+        if (hasPowerUp(state.run, 'floor-scout')) {
+          newZeroCellCount = countZeroCells(newBoard);
+        }
+
         // Calculate score for revealed cells
         const cellsRevealed = countRevealedCells(newBoard);
         newRun.score += calculateRevealScore(cellsRevealed, newRun.currentFloor);
+        newCellsRevealedThisFloor = cellsRevealed;
       } else {
         // Normal reveal
         const prevRevealed = countRevealedCells(state.board);
-        newBoard = revealCell(state.board, row, col);
+
+        // If momentum is active and this cell is a mine, protect the player
+        const targetCell = state.board[row][col];
+        if (state.run.momentumActive && targetCell.isMine) {
+          // Momentum saves from mine - flag it instead of revealing
+          newBoard = state.board.map((r) =>
+            r.map((c) =>
+              c.row === row && c.col === col ? { ...c, state: CellState.Flagged } : c
+            )
+          );
+          newRun.momentumActive = false; // Momentum used up
+        } else {
+          newBoard = revealCell(state.board, row, col);
+        }
+
         const newRevealed = countRevealedCells(newBoard);
-        newRun.score += calculateRevealScore(newRevealed - prevRevealed, newRun.currentFloor);
+        const cascadeSize = newRevealed - prevRevealed;
+        newRun.score += calculateRevealScore(cascadeSize, newRun.currentFloor);
+        newCellsRevealedThisFloor += cascadeSize;
+
+        // Check if momentum should activate (cascade of 5+ cells)
+        if (hasPowerUp(state.run, 'momentum') && cascadeSize >= 5 && !newRun.momentumActive) {
+          newRun.momentumActive = true;
+        }
       }
 
       // Check for mine hit
@@ -224,6 +277,8 @@ function roguelikeReducer(
         dangerCells: newDangerCells,
         minesRemaining: state.floorConfig.mines - countFlags(newBoard),
         closeCallCell,
+        zeroCellCount: newZeroCellCount,
+        cellsRevealedThisFloor: newCellsRevealedThisFloor,
       };
     }
 
@@ -236,11 +291,27 @@ function roguelikeReducer(
       if (cell.state === CellState.Revealed) return state;
 
       const newBoard = toggleFlag(state.board, row, col);
+      const nowFlagged = newBoard[row][col].state === CellState.Flagged;
+
+      // Update Pattern Memory cells when flagging (not unflagging)
+      let newPatternMemoryCells = state.patternMemoryCells;
+      if (nowFlagged && hasPowerUp(state.run, 'pattern-memory')) {
+        // Merge new diagonal safe cells with existing ones
+        const newDiagonals = calculatePatternMemoryCells(newBoard, row, col);
+        newPatternMemoryCells = new Set([...state.patternMemoryCells, ...newDiagonals]);
+      }
+
+      // Clear momentum on flag (as per design)
+      const newRun = hasPowerUp(state.run, 'momentum') && state.run.momentumActive
+        ? { ...state.run, momentumActive: false }
+        : state.run;
 
       return {
         ...state,
         board: newBoard,
+        run: newRun,
         minesRemaining: state.floorConfig.mines - countFlags(newBoard),
+        patternMemoryCells: newPatternMemoryCells,
       };
     }
 
@@ -258,7 +329,13 @@ function roguelikeReducer(
       // Calculate score for revealed cells
       const prevRevealed = countRevealedCells(state.board);
       const newRevealed = countRevealedCells(newBoard);
-      newRun.score += calculateRevealScore(newRevealed - prevRevealed, newRun.currentFloor);
+      const cascadeSize = newRevealed - prevRevealed;
+      newRun.score += calculateRevealScore(cascadeSize, newRun.currentFloor);
+
+      // Check if momentum should activate (cascade of 5+ cells)
+      if (hasPowerUp(state.run, 'momentum') && cascadeSize >= 5 && !newRun.momentumActive) {
+        newRun.momentumActive = true;
+      }
 
       let closeCallCell: { row: number; col: number } | null = null;
       if (hitMine) {
@@ -323,6 +400,7 @@ function roguelikeReducer(
       let newRun = {
         ...state.run,
         xRayUsedThisFloor: true,
+        momentumActive: false, // Using ability clears momentum
         score:
           state.run.score +
           calculateRevealScore(newRevealed - prevRevealed, state.run.currentFloor),
@@ -351,10 +429,8 @@ function roguelikeReducer(
     case 'SELECT_POWER_UP': {
       if (state.phase !== GamePhase.Draft) return state;
 
-      const newRun = {
-        ...state.run,
-        activePowerUps: [...state.run.activePowerUps, action.powerUp],
-      };
+      const newPowerUps = [...state.run.activePowerUps, action.powerUp];
+      const hasHeatMap = newPowerUps.some((p) => p.id === 'heat-map');
 
       // Set up next floor
       const nextFloor = state.run.currentFloor + 1;
@@ -370,13 +446,25 @@ function roguelikeReducer(
         time: 0,
         isFirstClick: true,
         run: {
-          ...newRun,
+          ...state.run,
+          activePowerUps: newPowerUps,
           currentFloor: nextFloor,
           xRayUsedThisFloor: false,
           luckyStartUsedThisFloor: false,
+          momentumActive: false,
+          peekUsedThisFloor: false,
+          safePathUsedThisFloor: false,
+          defusalKitUsedThisFloor: false,
+          surveyUsedThisFloor: false,
         },
         draftOptions: [],
         dangerCells: new Set(),
+        patternMemoryCells: new Set(),
+        zeroCellCount: null,
+        peekCell: null,
+        surveyResult: null,
+        heatMapEnabled: hasHeatMap,
+        cellsRevealedThisFloor: 0,
       };
     }
 
@@ -402,14 +490,200 @@ function roguelikeReducer(
           score: state.run.score + action.bonusPoints,
           xRayUsedThisFloor: false,
           luckyStartUsedThisFloor: false,
+          momentumActive: false,
+          peekUsedThisFloor: false,
+          safePathUsedThisFloor: false,
+          defusalKitUsedThisFloor: false,
+          surveyUsedThisFloor: false,
         },
         draftOptions: [],
         dangerCells: new Set(),
+        patternMemoryCells: new Set(),
+        zeroCellCount: null,
+        peekCell: null,
+        surveyResult: null,
+        heatMapEnabled: hasPowerUp(state.run, 'heat-map'),
+        cellsRevealedThisFloor: 0,
+      };
+    }
+
+    case 'USE_PEEK': {
+      if (state.phase !== GamePhase.Playing) return state;
+      if (!hasPowerUp(state.run, 'peek')) return state;
+      if (state.run.peekUsedThisFloor) return state;
+      if (state.isFirstClick) return state; // Can't peek before mines are placed
+
+      const { row, col } = action;
+      const cell = state.board[row][col];
+
+      // Can only peek hidden cells
+      if (cell.state !== CellState.Hidden) return state;
+
+      const peekValue = cell.isMine ? 'mine' : cell.adjacentMines;
+
+      return {
+        ...state,
+        peekCell: { row, col, value: peekValue },
+        run: {
+          ...state.run,
+          peekUsedThisFloor: true,
+          momentumActive: false, // Using ability clears momentum
+        },
+      };
+    }
+
+    case 'CLEAR_PEEK': {
+      if (!state.peekCell) return state;
+      return {
+        ...state,
+        peekCell: null,
+      };
+    }
+
+    case 'USE_SAFE_PATH': {
+      if (state.phase !== GamePhase.Playing) return state;
+      if (!hasPowerUp(state.run, 'safe-path')) return state;
+      if (state.run.safePathUsedThisFloor) return state;
+      if (state.isFirstClick) return state;
+
+      const { direction, index } = action;
+      const prevRevealed = countRevealedCells(state.board);
+      const newBoard = applySafePath(state.board, direction, index);
+      const newRevealed = countRevealedCells(newBoard);
+
+      let newRun = {
+        ...state.run,
+        safePathUsedThisFloor: true,
+        momentumActive: false,
+        score: state.run.score + calculateRevealScore(newRevealed - prevRevealed, state.run.currentFloor),
+      };
+
+      let newPhase: GamePhase = state.phase;
+      let newDraftOptions: PowerUp[] = [];
+
+      if (checkFloorCleared(newBoard)) {
+        const clearResult = handleFloorClearTransition(newRun, state.time, state.unlocks);
+        newRun.score = clearResult.score;
+        newPhase = clearResult.phase;
+        newDraftOptions = clearResult.draftOptions;
+      }
+
+      return {
+        ...state,
+        board: newBoard,
+        run: newRun,
+        phase: newPhase,
+        draftOptions: newDraftOptions,
+        minesRemaining: state.floorConfig.mines - countFlags(newBoard),
+      };
+    }
+
+    case 'USE_SURVEY': {
+      if (state.phase !== GamePhase.Playing) return state;
+      if (!hasPowerUp(state.run, 'survey')) return state;
+      if (state.run.surveyUsedThisFloor) return state;
+      if (state.isFirstClick) return state;
+
+      const { direction, index } = action;
+      const mineCount = calculateLineMineCount(state.board, direction, index);
+
+      return {
+        ...state,
+        run: {
+          ...state.run,
+          surveyUsedThisFloor: true,
+          momentumActive: false,
+        },
+        surveyResult: { direction, index, mineCount },
+      };
+    }
+
+    case 'USE_DEFUSAL_KIT': {
+      if (state.phase !== GamePhase.Playing) return state;
+      if (!hasPowerUp(state.run, 'defusal-kit')) return state;
+      if (state.run.defusalKitUsedThisFloor) return state;
+
+      const { row, col } = action;
+      const { board: newBoard, success } = applyDefusalKit(state.board, row, col);
+
+      if (!success) {
+        // Wasted the charge on incorrect flag
+        return {
+          ...state,
+          run: {
+            ...state.run,
+            defusalKitUsedThisFloor: true,
+            momentumActive: false,
+          },
+        };
+      }
+
+      let newRun = {
+        ...state.run,
+        defusalKitUsedThisFloor: true,
+        momentumActive: false,
+      };
+
+      let newPhase: GamePhase = state.phase;
+      let newDraftOptions: PowerUp[] = [];
+
+      if (checkFloorCleared(newBoard)) {
+        const clearResult = handleFloorClearTransition(newRun, state.time, state.unlocks);
+        newRun.score = clearResult.score;
+        newPhase = clearResult.phase;
+        newDraftOptions = clearResult.draftOptions;
+      }
+
+      return {
+        ...state,
+        board: newBoard,
+        run: newRun,
+        phase: newPhase,
+        draftOptions: newDraftOptions,
+        minesRemaining: state.floorConfig.mines - countFlags(newBoard) - 1, // One less mine now
       };
     }
 
     case 'EXPLOSION_COMPLETE': {
       if (state.phase !== GamePhase.Exploding) return state;
+
+      // Check if Quick Recovery applies (died before revealing 10 cells, not used this run)
+      const canUseQuickRecovery =
+        hasPowerUp(state.run, 'quick-recovery') &&
+        !state.run.quickRecoveryUsedThisRun &&
+        state.cellsRevealedThisFloor < 10;
+
+      if (canUseQuickRecovery) {
+        // Restart the current floor
+        const floorConfig = getFloorConfig(state.run.currentFloor, state.isMobile);
+        const newBoard = createEmptyBoard(floorConfig);
+
+        return {
+          ...state,
+          phase: GamePhase.Playing,
+          board: newBoard,
+          floorConfig,
+          minesRemaining: floorConfig.mines,
+          time: 0,
+          isFirstClick: true,
+          explodedCell: null,
+          dangerCells: new Set(),
+          patternMemoryCells: new Set(),
+          zeroCellCount: null,
+          cellsRevealedThisFloor: 0,
+          run: {
+            ...state.run,
+            quickRecoveryUsedThisRun: true,
+            xRayUsedThisFloor: false,
+            luckyStartUsedThisFloor: false,
+            momentumActive: false,
+            peekUsedThisFloor: false,
+            safePathUsedThisFloor: false,
+            defusalKitUsedThisFloor: false,
+            surveyUsedThisFloor: false,
+          },
+        };
+      }
 
       // Reveal all mines and transition to run-over
       const finalBoard = revealAllMines(state.board);
@@ -578,6 +852,37 @@ export function useRoguelikeState(isMobile: boolean = false, unlocks: PowerUpId[
     dispatch({ type: 'CLEAR_CHORD_HIGHLIGHT' });
   }, []);
 
+  const usePeek = useCallback((row: number, col: number) => {
+    dispatch({ type: 'USE_PEEK', row, col });
+  }, []);
+
+  const clearPeek = useCallback(() => {
+    dispatch({ type: 'CLEAR_PEEK' });
+  }, []);
+
+  const useSafePath = useCallback((direction: 'row' | 'col', index: number) => {
+    dispatch({ type: 'USE_SAFE_PATH', direction, index });
+  }, []);
+
+  const useDefusalKit = useCallback((row: number, col: number) => {
+    dispatch({ type: 'USE_DEFUSAL_KIT', row, col });
+  }, []);
+
+  const useSurvey = useCallback((direction: 'row' | 'col', index: number) => {
+    dispatch({ type: 'USE_SURVEY', direction, index });
+  }, []);
+
+  // Auto-clear peek after a short delay
+  useEffect(() => {
+    if (!state.peekCell) return;
+
+    const timeout = setTimeout(() => {
+      dispatch({ type: 'CLEAR_PEEK' });
+    }, 2000); // Show peek for 2 seconds
+
+    return () => clearTimeout(timeout);
+  }, [state.peekCell]);
+
   return {
     state,
     startRun,
@@ -586,6 +891,11 @@ export function useRoguelikeState(isMobile: boolean = false, unlocks: PowerUpId[
     toggleFlag: toggleFlagAction,
     chordClick,
     useXRay,
+    usePeek,
+    clearPeek,
+    useSafePath,
+    useDefusalKit,
+    useSurvey,
     selectPowerUp,
     skipDraft,
     explosionComplete,

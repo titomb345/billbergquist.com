@@ -58,14 +58,35 @@ export type GameAction =
 
 // ==================== ROGUELIKE TYPES ====================
 
+// Power-up rarity tiers
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic';
+
 // Power-up identifiers
 export type PowerUpId =
-  | 'iron-will'
-  | 'x-ray-vision'
+  // Common
+  | 'edge-walker'
+  | 'danger-sense'
+  | 'cautious-start'
+  | 'heat-map'
+  | 'quick-recovery'
+  | 'breathing-room'
+  | 'floor-scout'
+  // Uncommon
+  | 'pattern-memory'
+  | 'survey'
+  | 'momentum'
   | 'lucky-start'
   | 'sixth-sense'
-  | 'danger-sense'
-  | 'mine-detector'; // Unlockable
+  | 'mine-detector'
+  // Rare
+  | 'peek'
+  | 'safe-path'
+  | 'defusal-kit'
+  | 'iron-will'
+  | 'x-ray-vision'
+  // Epic
+  | 'probability-lens'
+  | 'oracles-gift';
 
 export interface PowerUp {
   id: PowerUpId;
@@ -73,6 +94,7 @@ export interface PowerUp {
   description: string;
   icon: string;
   type: 'passive' | 'active';
+  rarity: Rarity;
   usesPerFloor?: number; // For active abilities
 }
 
@@ -103,6 +125,12 @@ export interface RunState {
   ironWillAvailable: boolean;
   xRayUsedThisFloor: boolean;
   luckyStartUsedThisFloor: boolean;
+  quickRecoveryUsedThisRun: boolean; // Quick Recovery: one restart per run
+  momentumActive: boolean; // Momentum: next click guaranteed safe after big cascade
+  peekUsedThisFloor: boolean; // Peek: preview one cell per floor
+  safePathUsedThisFloor: boolean; // Safe Path: reveal row/col per floor
+  defusalKitUsedThisFloor: boolean; // Defusal Kit: remove one mine per floor
+  surveyUsedThisFloor: boolean; // Survey: reveal mine count in row/col per floor
   seed: string; // Run seed for sharing/comparing runs
 }
 
@@ -128,9 +156,15 @@ export interface RoguelikeGameState {
   draftOptions: PowerUp[];
   dangerCells: Set<string>; // Cell keys "row,col" that have danger glow
   chordHighlightCells: Set<string>; // Cell keys "row,col" to highlight during chord press
+  patternMemoryCells: Set<string>; // Cell keys "row,col" for Pattern Memory safe diagonal glow
   explodedCell: { row: number; col: number } | null; // Cell that triggered explosion
   closeCallCell: { row: number; col: number } | null; // Cell where Iron Will saved player
   unlocks: PowerUpId[]; // Unlocked power-ups available in draft pool
+  zeroCellCount: number | null; // Floor Scout: count of cells with 0 adjacent mines
+  peekCell: { row: number; col: number; value: number | 'mine' } | null; // Peek preview
+  heatMapEnabled: boolean; // Heat Map: tint revealed numbers by danger
+  cellsRevealedThisFloor: number; // For Quick Recovery check
+  surveyResult: { direction: 'row' | 'col'; index: number; mineCount: number } | null; // Survey result
 }
 
 // Roguelike-specific actions
@@ -141,6 +175,12 @@ export type RoguelikeAction =
   | { type: 'TOGGLE_FLAG'; row: number; col: number }
   | { type: 'CHORD_CLICK'; row: number; col: number }
   | { type: 'USE_X_RAY'; row: number; col: number }
+  | { type: 'USE_PEEK'; row: number; col: number }
+  | { type: 'CLEAR_PEEK' }
+  | { type: 'USE_SAFE_PATH'; direction: 'row' | 'col'; index: number }
+  | { type: 'USE_DEFUSAL_KIT'; row: number; col: number }
+  | { type: 'USE_SURVEY'; direction: 'row' | 'col'; index: number }
+  | { type: 'USE_QUICK_RECOVERY' }
   | { type: 'SELECT_POWER_UP'; powerUp: PowerUp }
   | { type: 'SKIP_DRAFT'; bonusPoints: number }
   | { type: 'TICK' }

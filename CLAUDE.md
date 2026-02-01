@@ -43,6 +43,7 @@ npm run preview
 
 ## Development Notes
 
+- **NEVER start the dev server** - it is always running during sessions and HMR handles updates automatically
 - Development server runs on http://localhost:5173
 - Code formatting follows Prettier config in `.prettierrc.json`
 - Production build outputs to `dist/` folder

@@ -1,5 +1,5 @@
 import { Cell, CellState, GamePhase, PowerUpId, RoguelikeGameState, RunState } from '../types';
-import { getFloorConfig, SCORING, MAX_FLOOR } from '../constants';
+import { getFloorConfig, SCORING, MAX_FLOOR, POWER_UP_POOL } from '../constants';
 import { createEmptyBoard, revealCell, revealCascade } from './gameLogic';
 
 // Generate a short run seed for sharing/comparing runs
@@ -21,6 +21,12 @@ export function createInitialRunState(): RunState {
     ironWillAvailable: true,
     xRayUsedThisFloor: false,
     luckyStartUsedThisFloor: false,
+    quickRecoveryUsedThisRun: false,
+    momentumActive: false,
+    peekUsedThisFloor: false,
+    safePathUsedThisFloor: false,
+    defusalKitUsedThisFloor: false,
+    surveyUsedThisFloor: false,
     seed: generateRunSeed(),
   };
 }
@@ -40,9 +46,15 @@ export function createRoguelikeInitialState(isMobile: boolean, unlocks: PowerUpI
     draftOptions: [],
     dangerCells: new Set(),
     chordHighlightCells: new Set(),
+    patternMemoryCells: new Set(),
     explodedCell: null,
     closeCallCell: null,
     unlocks,
+    zeroCellCount: null,
+    peekCell: null,
+    surveyResult: null,
+    heatMapEnabled: true, // TEMPORARY: Enable for testing
+    cellsRevealedThisFloor: 0,
   };
 }
 
@@ -50,6 +62,9 @@ export function createRoguelikeInitialState(isMobile: boolean, unlocks: PowerUpI
 export function setupFloor(state: RoguelikeGameState, floor: number): RoguelikeGameState {
   const floorConfig = getFloorConfig(floor, state.isMobile);
   const board = createEmptyBoard(floorConfig);
+
+  // Check if player has Heat Map power-up
+  const hasHeatMap = hasPowerUp(state.run, 'heat-map');
 
   return {
     ...state,
@@ -61,13 +76,24 @@ export function setupFloor(state: RoguelikeGameState, floor: number): RoguelikeG
     isFirstClick: true,
     dangerCells: new Set(),
     chordHighlightCells: new Set(),
+    patternMemoryCells: new Set(),
     explodedCell: null,
     closeCallCell: null,
+    zeroCellCount: null, // Will be set after first click if Floor Scout is active
+    peekCell: null,
+    surveyResult: null,
+    heatMapEnabled: hasHeatMap,
+    cellsRevealedThisFloor: 0,
     run: {
       ...state.run,
       currentFloor: floor,
       xRayUsedThisFloor: false,
       luckyStartUsedThisFloor: false,
+      momentumActive: false,
+      peekUsedThisFloor: false,
+      safePathUsedThisFloor: false,
+      defusalKitUsedThisFloor: false,
+      surveyUsedThisFloor: false,
     },
   };
 }
@@ -348,6 +374,193 @@ export function calculateChordHighlightCells(
   }
 
   return cells;
+}
+
+// Apply Edge Walker: reveal/flag corner cells at floor start
+export function applyEdgeWalker(board: Cell[][]): Cell[][] {
+  const rows = board.length;
+  const cols = board[0]?.length || 0;
+  if (rows < 2 || cols < 2) return board;
+
+  const corners = [
+    { row: 0, col: 0 },
+    { row: 0, col: cols - 1 },
+    { row: rows - 1, col: 0 },
+    { row: rows - 1, col: cols - 1 },
+  ];
+
+  let newBoard = board.map((r) => r.map((c) => ({ ...c })));
+
+  for (const { row, col } of corners) {
+    const cell = newBoard[row][col];
+    if (cell.state !== CellState.Hidden) continue;
+
+    if (cell.isMine) {
+      // Flag the mine
+      newBoard[row][col] = { ...cell, state: CellState.Flagged };
+    } else {
+      // Reveal the cell
+      newBoard = revealCell(newBoard, row, col);
+    }
+  }
+
+  return newBoard;
+}
+
+// Count cells with 0 adjacent mines for Floor Scout
+export function countZeroCells(board: Cell[][]): number {
+  let count = 0;
+  for (const row of board) {
+    for (const cell of row) {
+      if (!cell.isMine && cell.adjacentMines === 0) {
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
+// Calculate Pattern Memory cells: safe diagonal cells after flagging a mine
+export function calculatePatternMemoryCells(
+  board: Cell[][],
+  flaggedRow: number,
+  flaggedCol: number
+): Set<string> {
+  const cells = new Set<string>();
+  const rows = board.length;
+  const cols = board[0]?.length || 0;
+
+  // Check diagonal neighbors
+  const diagonals = [
+    { dr: -1, dc: -1 },
+    { dr: -1, dc: 1 },
+    { dr: 1, dc: -1 },
+    { dr: 1, dc: 1 },
+  ];
+
+  for (const { dr, dc } of diagonals) {
+    const r = flaggedRow + dr;
+    const c = flaggedCol + dc;
+    if (r >= 0 && r < rows && c >= 0 && c < cols) {
+      const cell = board[r][c];
+      // Only show safe cells that are still hidden
+      if (!cell.isMine && cell.state === CellState.Hidden) {
+        cells.add(`${r},${c}`);
+      }
+    }
+  }
+
+  return cells;
+}
+
+// Apply Safe Path: reveal up to 5 safe cells in a row or column
+export function applySafePath(
+  board: Cell[][],
+  direction: 'row' | 'col',
+  index: number
+): Cell[][] {
+  let newBoard = board.map((r) => r.map((c) => ({ ...c })));
+  const rows = newBoard.length;
+  const cols = newBoard[0]?.length || 0;
+
+  // Collect hidden safe cells in the specified row or column
+  const safeCells: Array<{ row: number; col: number }> = [];
+
+  if (direction === 'row') {
+    for (let c = 0; c < cols; c++) {
+      const cell = newBoard[index][c];
+      if (cell.state === CellState.Hidden && !cell.isMine) {
+        safeCells.push({ row: index, col: c });
+      }
+    }
+  } else {
+    for (let r = 0; r < rows; r++) {
+      const cell = newBoard[r][index];
+      if (cell.state === CellState.Hidden && !cell.isMine) {
+        safeCells.push({ row: r, col: index });
+      }
+    }
+  }
+
+  // Reveal up to 5 safe cells
+  const toReveal = safeCells.slice(0, 5);
+  for (const { row, col } of toReveal) {
+    newBoard = revealCell(newBoard, row, col);
+  }
+
+  return newBoard;
+}
+
+// Calculate mine count in a row or column for Survey
+export function calculateLineMineCount(
+  board: Cell[][],
+  direction: 'row' | 'col',
+  index: number
+): number {
+  const rows = board.length;
+  const cols = board[0]?.length || 0;
+  let count = 0;
+
+  if (direction === 'row') {
+    for (let c = 0; c < cols; c++) {
+      if (board[index][c].isMine) count++;
+    }
+  } else {
+    for (let r = 0; r < rows; r++) {
+      if (board[r][index].isMine) count++;
+    }
+  }
+
+  return count;
+}
+
+// Apply Defusal Kit: remove a flagged mine if correctly flagged
+export function applyDefusalKit(
+  board: Cell[][],
+  row: number,
+  col: number
+): { board: Cell[][]; success: boolean } {
+  const cell = board[row][col];
+
+  // Must be a flagged mine
+  if (cell.state !== CellState.Flagged || !cell.isMine) {
+    return { board, success: false };
+  }
+
+  // Remove the mine and reveal the cell
+  const newBoard = board.map((r) =>
+    r.map((c) => {
+      if (c.row === row && c.col === col) {
+        return { ...c, isMine: false, state: CellState.Revealed, adjacentMines: 0 };
+      }
+      return { ...c };
+    })
+  );
+
+  // Recalculate adjacent mines for surrounding cells
+  const rows = newBoard.length;
+  const cols = newBoard[0].length;
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      const r = row + dr;
+      const c = col + dc;
+      if (r >= 0 && r < rows && c >= 0 && c < cols && !newBoard[r][c].isMine) {
+        let count = 0;
+        for (let ddr = -1; ddr <= 1; ddr++) {
+          for (let ddc = -1; ddc <= 1; ddc++) {
+            const rr = r + ddr;
+            const cc = c + ddc;
+            if (rr >= 0 && rr < rows && cc >= 0 && cc < cols && newBoard[rr][cc].isMine) {
+              count++;
+            }
+          }
+        }
+        newBoard[r][c].adjacentMines = count;
+      }
+    }
+  }
+
+  return { board: newBoard, success: true };
 }
 
 // Re-export countFlags from gameLogic to avoid duplication

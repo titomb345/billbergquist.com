@@ -4,8 +4,10 @@ import styles from './ArcadeCabinet.module.css';
 interface ArcadeCabinetProps {
   children: ReactNode;
   title: string;
-  color?: 'mint' | 'magenta' | 'purple';
+  color?: 'mint' | 'magenta' | 'purple' | 'orange';
   onBack?: () => void;
+  onReset?: () => void;
+  resetLabel?: string;
 }
 
 function ArcadeCabinet({
@@ -13,6 +15,8 @@ function ArcadeCabinet({
   title,
   color = 'mint',
   onBack,
+  onReset,
+  resetLabel = 'RESET',
 }: ArcadeCabinetProps) {
   const colorClass = styles[`color${color.charAt(0).toUpperCase()}${color.slice(1)}`];
 
@@ -45,7 +49,7 @@ function ArcadeCabinet({
       </div>
 
       {/* Control Panel */}
-      <div className={styles.controlPanel}>
+      <div className={`${styles.controlPanel} ${onBack && onReset ? styles.controlPanelSpaced : ''}`}>
         {onBack && (
           <button
             className={styles.backButton}
@@ -63,6 +67,26 @@ function ArcadeCabinet({
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
             BACK
+          </button>
+        )}
+        {onReset && (
+          <button
+            className={styles.resetButton}
+            onClick={onReset}
+            type="button"
+          >
+            {resetLabel}
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+            </svg>
           </button>
         )}
       </div>

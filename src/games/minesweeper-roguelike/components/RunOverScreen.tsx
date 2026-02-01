@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { PowerUp, RoguelikeStats } from '../types';
-import { MAX_FLOOR, UNLOCK_FLOOR_5_REWARD } from '../constants';
+import { MAX_FLOOR } from '../constants';
+import RelicsPopover from './RelicsPopover';
 
 interface RunOverScreenProps {
   isVictory: boolean;
@@ -22,9 +24,9 @@ function RunOverScreen({
   seed,
   onTryAgain,
 }: RunOverScreenProps) {
+  const [showRelicsPopover, setShowRelicsPopover] = useState(false);
   const isNewBestFloor = floor > stats.bestFloor;
   const isNewBestScore = score > stats.bestScore;
-  const justUnlocked = floor >= 5 && !stats.unlocks.includes(UNLOCK_FLOOR_5_REWARD);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -67,13 +69,14 @@ function RunOverScreen({
         </div>
         {powerUps.length > 0 && (
           <div className="summary-row">
-            <span className="summary-label">Power-Ups</span>
-            <span className="summary-value powerups-list">
-              {powerUps.map((p) => (
-                <span key={p.id} className="powerup-badge" title={p.name}>
-                  {p.icon}
-                </span>
-              ))}
+            <span className="summary-label">Relics</span>
+            <span className="summary-value">
+              <button
+                className="see-relics-button"
+                onClick={() => setShowRelicsPopover(true)}
+              >
+                See Relics ({powerUps.length})
+              </button>
             </span>
           </div>
         )}
@@ -83,16 +86,6 @@ function RunOverScreen({
         <span className="run-seed-label">Run Seed</span>
         <span className="run-seed-value">#{seed}</span>
       </div>
-
-      {justUnlocked && (
-        <div className="unlock-notification">
-          <span className="unlock-icon">🎉</span>
-          <span className="unlock-text">
-            Unlocked: <strong>📡 Mine Detector</strong>
-          </span>
-          <span className="unlock-description">Shows exact mine count in a 5×5 area</span>
-        </div>
-      )}
 
       <button className="try-again-button" onClick={onTryAgain}>
         {isVictory ? 'PLAY AGAIN' : 'TRY AGAIN'}
@@ -104,6 +97,10 @@ function RunOverScreen({
           {stats.totalRuns + 1} runs • {stats.floorsCleared + floor - 1} floors
         </span>
       </div>
+
+      {showRelicsPopover && (
+        <RelicsPopover relics={powerUps} onClose={() => setShowRelicsPopover(false)} />
+      )}
     </div>
   );
 }

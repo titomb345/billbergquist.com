@@ -120,7 +120,6 @@
   border-radius: var(--radius-sm);
 }
 
-
 .tagline {
   font-family: var(--font-body);
   font-size: 1.125rem;
@@ -148,6 +147,23 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Orange accent line at bottom */
+.accentLine {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--neon-orange),
+    transparent
+  );
+  box-shadow: 0 0 20px var(--neon-orange-glow);
 }
 
 @media (max-width: 768px) {
@@ -212,10 +228,6 @@
   .role,
   .tagline,
   .cta {
-    animation: none;
-  }
-
-  .cursor {
     animation: none;
   }
 }

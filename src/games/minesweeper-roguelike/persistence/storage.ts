@@ -121,7 +121,11 @@ export function saveGameState(state: RoguelikeGameState): void {
   }
 }
 
+// TEMPORARY: Set to false to restore normal behavior
+let SKIP_LOAD_FOR_TESTING = true;
+
 export function loadGameState(currentUnlocks: PowerUpId[]): RoguelikeGameState | null {
+  if (SKIP_LOAD_FOR_TESTING) return null;
   try {
     const saved = localStorage.getItem(GAME_STATE_KEY);
     if (!saved) return null;

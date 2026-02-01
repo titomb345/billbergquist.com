@@ -1,4 +1,5 @@
 import { PowerUp } from '../types';
+import { RARITY_COLORS } from '../constants';
 
 interface PowerUpDraftProps {
   options: PowerUp[];
@@ -25,14 +26,22 @@ function PowerUpDraft({ options, floorCleared, score, onSelect, onContinue }: Po
           <p className="draft-instruction">Choose your reward:</p>
           <div className="draft-cards">
             {options.map((powerUp) => (
-              <button key={powerUp.id} className="draft-card" onClick={() => onSelect(powerUp)}>
+              <button
+                key={powerUp.id}
+                className={`draft-card rarity-${powerUp.rarity}`}
+                onClick={() => onSelect(powerUp)}
+                style={{ '--rarity-color': RARITY_COLORS[powerUp.rarity] } as React.CSSProperties}
+              >
                 <div className="draft-card-left">
                   <span className="draft-card-icon">{powerUp.icon}</span>
                 </div>
                 <div className="draft-card-right">
                   <div className="draft-card-header">
                     <span className="draft-card-name">{powerUp.name}</span>
-                    <span className={`draft-card-type ${powerUp.type}`}>{powerUp.type}</span>
+                    <span className={`rarity-badge rarity-${powerUp.rarity}`}>
+                      {powerUp.rarity}
+                    </span>
+                    <span className={`type-badge ${powerUp.type}`}>{powerUp.type}</span>
                   </div>
                   <span className="draft-card-description">{powerUp.description}</span>
                 </div>
