@@ -1,7 +1,9 @@
 import { createBrowserRouter } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
-import { MinesweeperPage } from './games/minesweeper';
+import AboutPage from './pages/AboutPage';
+import ArcadePage from './pages/ArcadePage';
+import { MinesweeperRoguelikePage } from './games/minesweeper-roguelike';
 
 export const router = createBrowserRouter([
   {
@@ -13,8 +15,16 @@ export const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: 'minesweeper',
-        element: <MinesweeperPage />,
+        path: 'about',
+        element: <AboutPage />,
+      },
+      {
+        path: 'arcade',
+        element: <ArcadePage />,
+      },
+      {
+        path: 'arcade/descent',
+        element: <MinesweeperRoguelikePage />,
       },
     ],
   },
