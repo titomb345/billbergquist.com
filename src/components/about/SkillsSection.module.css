@@ -47,8 +47,8 @@
 }
 
 .skill:hover {
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 8px var(--neon-cyan-glow);
+  border-color: var(--neon-mint);
+  box-shadow: 0 0 8px var(--neon-mint-glow);
 }
 
 @media (max-width: 640px) {

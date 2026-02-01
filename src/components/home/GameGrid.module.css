@@ -6,7 +6,16 @@
 
 .sectionTitle {
   text-align: center;
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-md);
+}
+
+.blurb {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  max-width: 500px;
+  margin: 0 auto var(--space-lg);
+  line-height: 1.6;
 }
 
 .grid {

@@ -63,10 +63,10 @@
   font-family: var(--font-heading);
   font-size: 0.75rem;
   letter-spacing: 3px;
-  color: var(--neon-cyan);
+  color: var(--neon-mint);
   text-shadow:
-    0 0 5px var(--neon-cyan),
-    0 0 10px var(--neon-cyan-glow);
+    0 0 5px var(--neon-mint),
+    0 0 10px var(--neon-mint-glow);
   animation: blink 1.5s ease-in-out infinite;
 }
 
@@ -96,7 +96,7 @@
   border-top: none;
   padding: var(--space-lg);
   box-shadow:
-    0 0 30px var(--neon-glow, var(--neon-cyan-glow)),
+    0 0 30px var(--neon-glow, var(--neon-mint-glow)),
     inset 0 0 60px rgba(0, 0, 0, 0.3);
   animation: cabinet-glow 4s ease-in-out infinite;
 }
@@ -132,7 +132,7 @@
   padding: var(--space-md);
   box-shadow:
     inset 0 0 100px rgba(0, 0, 0, 0.5),
-    0 0 20px var(--neon-glow, var(--neon-cyan-glow));
+    0 0 20px var(--neon-glow, var(--neon-mint-glow));
   overflow: hidden;
 }
 
@@ -143,7 +143,7 @@
   inset: 0;
   border-radius: 20px / 10px;
   box-shadow:
-    inset 0 0 30px var(--neon-glow, var(--neon-cyan-glow)),
+    inset 0 0 30px var(--neon-glow, var(--neon-mint-glow)),
     inset 0 0 60px rgba(0, 245, 255, 0.1);
   pointer-events: none;
 }
@@ -236,23 +236,23 @@
   font-family: var(--font-heading);
   font-size: 0.75rem;
   letter-spacing: 2px;
-  color: var(--neon-cyan);
+  color: var(--neon-mint);
   background: transparent;
-  border: 2px solid var(--neon-cyan);
+  border: 2px solid var(--neon-mint);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--transition-fast);
   box-shadow:
-    0 0 5px var(--neon-cyan-glow),
-    inset 0 0 5px var(--neon-cyan-glow);
+    0 0 5px var(--neon-mint-glow),
+    inset 0 0 5px var(--neon-mint-glow);
 }
 
 .backButton:hover {
   background: rgba(0, 245, 255, 0.1);
   box-shadow:
-    0 0 10px var(--neon-cyan),
-    0 0 20px var(--neon-cyan-glow),
-    inset 0 0 10px var(--neon-cyan-glow);
+    0 0 10px var(--neon-mint),
+    0 0 20px var(--neon-mint-glow),
+    inset 0 0 10px var(--neon-mint-glow);
 }
 
 .backButton:active {
@@ -280,10 +280,10 @@
 }
 
 /* Color variants */
-.colorCyan {
-  --marquee-color: var(--neon-cyan);
-  --marquee-glow: var(--neon-cyan-glow);
-  --neon-glow: var(--neon-cyan-glow);
+.colorMint {
+  --marquee-color: var(--neon-mint);
+  --marquee-glow: var(--neon-mint-glow);
+  --neon-glow: var(--neon-mint-glow);
 }
 
 .colorMagenta {
@@ -356,6 +356,17 @@
   }
 }
 
+/* Local keyframes for CSS modules */
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .marquee::before,
@@ -368,7 +379,7 @@
   .screenFrame {
     animation: none;
     box-shadow:
-      0 0 20px var(--neon-glow, var(--neon-cyan-glow)),
+      0 0 20px var(--neon-glow, var(--neon-mint-glow)),
       inset 0 0 60px rgba(0, 0, 0, 0.3);
   }
 }

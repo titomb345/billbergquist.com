@@ -18,6 +18,10 @@ function GameGrid() {
       >
         FEATURED GAME
       </GlowText>
+      <p className={styles.blurb}>
+        A playground for rapid AI-assisted development, combining my love of
+        gaming with experiments in agentic workflows.
+      </p>
       <div className={styles.grid}>
         <GameCard
           title="Minesweeper: Descent"
@@ -35,7 +39,7 @@ function GameGrid() {
       </div>
       <div className={styles.arcadeLink}>
         <Button variant="secondary" onClick={() => navigate('/arcade')}>
-          View All Games →
+          View My Arcade →
         </Button>
       </div>
     </section>
