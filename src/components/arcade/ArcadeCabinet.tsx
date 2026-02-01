@@ -4,14 +4,14 @@ import styles from './ArcadeCabinet.module.css';
 interface ArcadeCabinetProps {
   children: ReactNode;
   title: string;
-  color?: 'cyan' | 'magenta' | 'purple';
+  color?: 'mint' | 'magenta' | 'purple';
   onBack?: () => void;
 }
 
 function ArcadeCabinet({
   children,
   title,
-  color = 'cyan',
+  color = 'mint',
   onBack,
 }: ArcadeCabinetProps) {
   const colorClass = styles[`color${color.charAt(0).toUpperCase()}${color.slice(1)}`];

@@ -9,19 +9,27 @@ interface SkillCategory {
 const skillCategories: SkillCategory[] = [
   {
     name: 'Frontend',
-    skills: ['React', 'TypeScript', 'Vue', 'JavaScript', 'HTML', 'CSS'],
+    skills: ['React', 'Vue', 'TypeScript', 'JavaScript', 'HTML', 'CSS'],
   },
   {
-    name: 'Libraries & Frameworks',
-    skills: ['NX', 'MUI', 'Tailwind', 'Redux', 'React Query', 'Vite'],
+    name: 'Libraries & UI',
+    skills: ['Redux', 'React Query', 'MUI', 'NX', 'Vite'],
   },
   {
     name: 'Backend & Cloud',
-    skills: ['Node.js', 'AWS', 'REST APIs', 'GraphQL'],
+    skills: ['Node.js', 'NestJS', 'AWS', 'MongoDB', 'GraphQL'],
   },
   {
     name: 'Tools & Practices',
-    skills: ['Git', 'CI/CD', 'Testing', 'Agile', 'Code Review'],
+    skills: ['Git', 'GitHub', 'JIRA', 'CI/CD', 'Jest', 'Vitest', 'Agile'],
+  },
+  {
+    name: 'Artificial Intelligence',
+    skills: ['Claude Code', 'Cursor', 'Agentic Workflows', 'Prompt Engineering'],
+  },
+  {
+    name: 'Leadership',
+    skills: ['Mentoring', 'Technical Writing', 'Code Review', 'Cross-Team Collaboration'],
   },
 ];
 
@@ -31,7 +39,7 @@ function SkillsSection() {
       <GlowText
         as="h2"
         size="medium"
-        color="cyan"
+        color="mint"
         className={styles.sectionTitle}
       >
         SKILLS

@@ -15,8 +15,17 @@ function ArcadePage() {
           ARCADE
         </GlowText>
         <p className={styles.subtitle}>
-          A collection of browser-based games built for fun.
+          Welcome to my arcade—a collection of browser-based games built
+          entirely through{' '}
+          <span className="neon-text-orange">AI-assisted development</span>.
+          These projects are my playground for exploring agentic workflows,
+          pushing the boundaries of what's possible when combining rapid
+          prototyping with tools like{' '}
+          <span className="neon-text-orange">Claude Code</span>. Gaming has
+          always been a passion of mine, and this is where that passion meets
+          cutting-edge development techniques.
         </p>
+        <div className="accent-line-orange" />
       </header>
 
       <main className={styles.grid}>
